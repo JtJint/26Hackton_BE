@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 public record ResumeData(
 	Long resumeId,
 	String jobRole,
+	CareerLevel careerLevel,
+	Position position,
+	InterviewType interviewType,
 	String extractedText,
 	LocalDateTime createdAt
 ) {

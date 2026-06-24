@@ -25,11 +25,23 @@ public class ResumeController {
 
 	@PostMapping("/text")
 	public ResumeResponse createTextResume(@Valid @org.springframework.web.bind.annotation.RequestBody TextResumeRequest request) {
-		return ResumeResponse.from(resumeService.createFromText(request.jobRole(), request.resumeText()));
+		return ResumeResponse.from(resumeService.createFromText(
+			request.jobRole(),
+			request.careerLevel(),
+			request.position(),
+			request.interviewType(),
+			request.resumeText()
+		));
 	}
 
 	@PostMapping("/analyze")
 	public ResumeAnalysisResponse analyze(@Valid @org.springframework.web.bind.annotation.RequestBody ResumeAnalysisRequest request) {
-		return resumeService.analyze(request.jobRole(), request.resumeText());
+		return resumeService.analyze(
+			request.jobRole(),
+			request.careerLevel(),
+			request.position(),
+			request.interviewType(),
+			request.resumeText()
+		);
 	}
 }

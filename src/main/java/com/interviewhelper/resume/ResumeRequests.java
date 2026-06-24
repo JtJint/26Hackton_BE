@@ -9,12 +9,18 @@ public final class ResumeRequests {
 
 	public record TextResumeRequest(
 		@NotBlank String jobRole,
+		CareerLevel careerLevel,
+		Position position,
+		InterviewType interviewType,
 		@NotBlank String resumeText
 	) {
 	}
 
 	public record ResumeAnalysisRequest(
 		@NotBlank String jobRole,
+		CareerLevel careerLevel,
+		Position position,
+		InterviewType interviewType,
 		@NotBlank String resumeText
 	) {
 	}

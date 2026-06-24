@@ -3,6 +3,10 @@ package com.interviewhelper.interview;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.interviewhelper.resume.CareerLevel;
+import com.interviewhelper.resume.InterviewType;
+import com.interviewhelper.resume.Position;
+
 public final class InterviewResponses {
 
 	private InterviewResponses() {
@@ -28,6 +32,9 @@ public final class InterviewResponses {
 		Long interviewId,
 		Long resumeId,
 		String jobRole,
+		CareerLevel careerLevel,
+		Position position,
+		InterviewType interviewType,
 		List<QuestionResponse> questions,
 		LocalDateTime createdAt
 	) {
@@ -36,6 +43,9 @@ public final class InterviewResponses {
 				interview.interviewId(),
 				interview.resumeId(),
 				interview.jobRole(),
+				interview.careerLevel(),
+				interview.position(),
+				interview.interviewType(),
 				interview.questions().stream().map(QuestionResponse::from).toList(),
 				interview.createdAt()
 			);

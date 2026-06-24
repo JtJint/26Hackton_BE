@@ -11,6 +11,9 @@ public final class ResumeResponses {
 	public record ResumeResponse(
 		Long resumeId,
 		String jobRole,
+		CareerLevel careerLevel,
+		Position position,
+		InterviewType interviewType,
 		String extractedText,
 		LocalDateTime createdAt
 	) {
@@ -18,6 +21,9 @@ public final class ResumeResponses {
 			return new ResumeResponse(
 				resume.resumeId(),
 				resume.jobRole(),
+				resume.careerLevel(),
+				resume.position(),
+				resume.interviewType(),
 				resume.extractedText(),
 				resume.createdAt()
 			);
@@ -27,6 +33,9 @@ public final class ResumeResponses {
 	public record ResumeAnalysisResponse(
 		Long resumeId,
 		String jobRole,
+		CareerLevel careerLevel,
+		Position position,
+		InterviewType interviewType,
 		String summary,
 		List<String> skills,
 		List<String> projectKeywords,
