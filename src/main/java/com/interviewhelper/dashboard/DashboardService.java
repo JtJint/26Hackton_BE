@@ -27,7 +27,14 @@ public class DashboardService {
 		Integer contentScore,
 		Integer eyeScore,
 		Integer speechScore,
-		String summary
+		String summary,
+		String contentStrength,
+		String contentImprovement,
+		String eyeStrength,
+		String eyeImprovement,
+		String speechStrength,
+		String speechImprovement,
+		String recommendedAnswer
 	) {
 		if (userId == null) {
 			return;
@@ -39,7 +46,14 @@ public class DashboardService {
 			valueOrZero(contentScore),
 			valueOrZero(eyeScore),
 			valueOrZero(speechScore),
-			summary == null || summary.isBlank() ? "면접 피드백이 생성되었습니다." : summary
+			normalize(summary, "면접 피드백이 생성되었습니다."),
+			normalize(contentStrength, ""),
+			normalize(contentImprovement, ""),
+			normalize(eyeStrength, ""),
+			normalize(eyeImprovement, ""),
+			normalize(speechStrength, ""),
+			normalize(speechImprovement, ""),
+			normalize(recommendedAnswer, "")
 		));
 	}
 
@@ -130,5 +144,9 @@ public class DashboardService {
 
 	private int valueOrZero(Integer value) {
 		return value == null ? 0 : value;
+	}
+
+	private String normalize(String value, String defaultValue) {
+		return value == null || value.isBlank() ? defaultValue : value;
 	}
 }

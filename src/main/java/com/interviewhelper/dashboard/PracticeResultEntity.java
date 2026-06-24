@@ -39,6 +39,27 @@ public class PracticeResultEntity {
 	@Column(nullable = false, length = 1000)
 	private String summary;
 
+	@Column(length = 1000)
+	private String contentStrength;
+
+	@Column(length = 1000)
+	private String contentImprovement;
+
+	@Column(length = 1000)
+	private String eyeStrength;
+
+	@Column(length = 1000)
+	private String eyeImprovement;
+
+	@Column(length = 1000)
+	private String speechStrength;
+
+	@Column(length = 1000)
+	private String speechImprovement;
+
+	@Column(length = 4000)
+	private String recommendedAnswer;
+
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
@@ -52,7 +73,14 @@ public class PracticeResultEntity {
 		Integer contentScore,
 		Integer eyeScore,
 		Integer speechScore,
-		String summary
+		String summary,
+		String contentStrength,
+		String contentImprovement,
+		String eyeStrength,
+		String eyeImprovement,
+		String speechStrength,
+		String speechImprovement,
+		String recommendedAnswer
 	) {
 		this.userId = userId;
 		this.interviewId = interviewId;
@@ -61,6 +89,13 @@ public class PracticeResultEntity {
 		this.eyeScore = eyeScore;
 		this.speechScore = speechScore;
 		this.summary = summary;
+		this.contentStrength = contentStrength;
+		this.contentImprovement = contentImprovement;
+		this.eyeStrength = eyeStrength;
+		this.eyeImprovement = eyeImprovement;
+		this.speechStrength = speechStrength;
+		this.speechImprovement = speechImprovement;
+		this.recommendedAnswer = recommendedAnswer;
 	}
 
 	@PrePersist
@@ -100,6 +135,34 @@ public class PracticeResultEntity {
 
 	public String getSummary() {
 		return summary;
+	}
+
+	public String getContentStrength() {
+		return contentStrength;
+	}
+
+	public String getContentImprovement() {
+		return contentImprovement;
+	}
+
+	public String getEyeStrength() {
+		return eyeStrength;
+	}
+
+	public String getEyeImprovement() {
+		return eyeImprovement;
+	}
+
+	public String getSpeechStrength() {
+		return speechStrength;
+	}
+
+	public String getSpeechImprovement() {
+		return speechImprovement;
+	}
+
+	public String getRecommendedAnswer() {
+		return recommendedAnswer;
 	}
 
 	public LocalDateTime getCreatedAt() {

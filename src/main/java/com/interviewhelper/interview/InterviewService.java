@@ -211,7 +211,14 @@ public class InterviewService {
 			feedback.contentFeedback().score(),
 			feedback.eyeFeedback().score(),
 			feedback.speechFeedback().score(),
-			feedback.summary()
+			feedback.summary(),
+			feedback.contentFeedback().strength(),
+			feedback.contentFeedback().improvement(),
+			feedback.eyeFeedback().strength(),
+			feedback.eyeFeedback().improvement(),
+			feedback.speechFeedback().strength(),
+			feedback.speechFeedback().improvement(),
+			feedback.recommendedAnswer()
 		);
 		return feedback;
 	}

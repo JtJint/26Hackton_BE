@@ -388,6 +388,22 @@ GET /api/dashboard/{userId}
       "eyeScore": 82,
       "speechScore": 81,
       "summary": "AI 서버가 답변 내용과 전달 지표를 종합해 피드백을 생성했습니다.",
+      "contentFeedback": {
+        "score": 70,
+        "strength": "답변에서 핵심 경험을 설명했습니다.",
+        "improvement": "실제 프로젝트 사례와 결과를 더 구체적으로 말하면 좋습니다."
+      },
+      "eyeFeedback": {
+        "score": 82,
+        "strength": "화면 응시 비율이 안정적입니다.",
+        "improvement": "핵심 문장에서 시선을 더 오래 유지해 보세요."
+      },
+      "speechFeedback": {
+        "score": 81,
+        "strength": "말 속도는 적절한 편입니다.",
+        "improvement": "문장 사이에 짧은 쉼을 넣으면 더 안정적으로 들립니다."
+      },
+      "recommendedAnswer": "저는 Spring Boot 프로젝트에서...",
       "createdAt": "2026-06-24T22:40:00"
     }
   ]

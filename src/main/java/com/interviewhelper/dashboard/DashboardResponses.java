@@ -15,6 +15,13 @@ public final class DashboardResponses {
 	) {
 	}
 
+	public record FeedbackDetailResponse(
+		Integer score,
+		String strength,
+		String improvement
+	) {
+	}
+
 	public record RecentPracticeResponse(
 		Long resultId,
 		Long interviewId,
@@ -23,6 +30,10 @@ public final class DashboardResponses {
 		Integer eyeScore,
 		Integer speechScore,
 		String summary,
+		FeedbackDetailResponse contentFeedback,
+		FeedbackDetailResponse eyeFeedback,
+		FeedbackDetailResponse speechFeedback,
+		String recommendedAnswer,
 		LocalDateTime createdAt
 	) {
 		public static RecentPracticeResponse from(PracticeResultEntity result) {
@@ -34,6 +45,10 @@ public final class DashboardResponses {
 				result.getEyeScore(),
 				result.getSpeechScore(),
 				result.getSummary(),
+				new FeedbackDetailResponse(result.getContentScore(), result.getContentStrength(), result.getContentImprovement()),
+				new FeedbackDetailResponse(result.getEyeScore(), result.getEyeStrength(), result.getEyeImprovement()),
+				new FeedbackDetailResponse(result.getSpeechScore(), result.getSpeechStrength(), result.getSpeechImprovement()),
+				result.getRecommendedAnswer(),
 				result.getCreatedAt()
 			);
 		}
