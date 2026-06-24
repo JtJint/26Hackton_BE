@@ -9,6 +9,8 @@ public record AiFeedbackResult(
 	AiFeedbackCategoryResult eyeFeedback,
 	AiFeedbackCategoryResult speechFeedback,
 	String recommendedAnswer,
+	String gapCriterion,
+	String followUpQuestion,
 	List<AiQuestionFeedbackResult> questionResults
 ) {
 }

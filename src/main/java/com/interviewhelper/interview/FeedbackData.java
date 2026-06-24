@@ -13,6 +13,8 @@ public record FeedbackData(
 	FeedbackCategoryResponse eyeFeedback,
 	FeedbackCategoryResponse speechFeedback,
 	String recommendedAnswer,
+	String gapCriterion,
+	String followUpQuestion,
 	List<QuestionResultResponse> questionResults
 ) {
 }

@@ -152,6 +152,7 @@ public class HttpAiServerClient implements AiServerClient {
 		List<AiFeedbackCategoryResult> speechFeedbacks = new ArrayList<>();
 		List<String> recommendedAnswers = new ArrayList<>();
 		List<String> followUps = new ArrayList<>();
+		List<String> gapCriteria = new ArrayList<>();
 		int totalScore = 0;
 
 		for (AnswerData answer : answers) {
@@ -163,6 +164,9 @@ public class HttpAiServerClient implements AiServerClient {
 			speechFeedbacks.add(response.speechFeedback());
 			if (response.recommendedAnswer() != null && !response.recommendedAnswer().isBlank()) {
 				recommendedAnswers.add(response.recommendedAnswer());
+			}
+			if (response.gapCriterion() != null && !response.gapCriterion().isBlank()) {
+				gapCriteria.add(response.gapCriterion());
 			}
 			followUps.addAll(response.followUpQuestions());
 			questionResults.add(new AiQuestionFeedbackResult(
@@ -176,6 +180,14 @@ public class HttpAiServerClient implements AiServerClient {
 
 		int averageScore = answers.isEmpty() ? 0 : Math.round((float) totalScore / answers.size());
 		String recommendedAnswer = buildRecommendedAnswer(recommendedAnswers, followUps);
+		String followUpQuestion = followUps.stream()
+			.filter(value -> value != null && !value.isBlank())
+			.findFirst()
+			.orElse("");
+		String gapCriterion = gapCriteria.stream()
+			.filter(value -> value != null && !value.isBlank())
+			.findFirst()
+			.orElse("");
 
 		return new AiFeedbackResult(
 			averageScore,
@@ -184,6 +196,8 @@ public class HttpAiServerClient implements AiServerClient {
 			averageFeedback(eyeFeedbacks, averageScore, "시선 지표를 피드백에 반영했습니다.", "핵심 문장에서는 화면을 바라보며 말하는 연습을 해보세요."),
 			averageFeedback(speechFeedbacks, averageScore, "발화 지표를 피드백에 반영했습니다.", "말 속도와 습관어를 점검하며 답변을 짧게 끊어 말해보세요."),
 			recommendedAnswer,
+			gapCriterion,
+			followUpQuestion,
 			questionResults
 		);
 	}
@@ -555,6 +569,8 @@ public class HttpAiServerClient implements AiServerClient {
 		@JsonProperty("speech_feedback") AiFeedbackCategoryResult speechFeedback,
 		@JsonProperty("overall_score") Integer overallScore,
 		@JsonProperty("recommended_answer") String recommendedAnswer,
+		@JsonProperty("gap_criterion") String gapCriterion,
+		@JsonProperty("follow_up_question") String followUpQuestion,
 		@JsonProperty("follow_up_questions") List<String> followUpQuestions
 	) {
 		public FeedbackResponse {
@@ -578,7 +594,11 @@ public class HttpAiServerClient implements AiServerClient {
 			);
 			overallScore = overallScore == null ? 0 : overallScore;
 			recommendedAnswer = recommendedAnswer == null ? "" : recommendedAnswer;
-			followUpQuestions = followUpQuestions == null ? List.of() : followUpQuestions;
+			gapCriterion = gapCriterion == null ? "" : gapCriterion;
+			followUpQuestion = followUpQuestion == null ? "" : followUpQuestion;
+			if (followUpQuestions == null || followUpQuestions.isEmpty()) {
+				followUpQuestions = followUpQuestion.isBlank() ? List.of() : List.of(followUpQuestion);
+			}
 		}
 
 		private static AiFeedbackCategoryResult defaultFeedback(

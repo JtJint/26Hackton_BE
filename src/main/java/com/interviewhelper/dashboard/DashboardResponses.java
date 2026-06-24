@@ -34,6 +34,8 @@ public final class DashboardResponses {
 		FeedbackDetailResponse eyeFeedback,
 		FeedbackDetailResponse speechFeedback,
 		String recommendedAnswer,
+		String gapCriterion,
+		String followUpQuestion,
 		LocalDateTime createdAt
 	) {
 		public static RecentPracticeResponse from(PracticeResultEntity result) {
@@ -49,6 +51,8 @@ public final class DashboardResponses {
 				new FeedbackDetailResponse(result.getEyeScore(), result.getEyeStrength(), result.getEyeImprovement()),
 				new FeedbackDetailResponse(result.getSpeechScore(), result.getSpeechStrength(), result.getSpeechImprovement()),
 				result.getRecommendedAnswer(),
+				result.getGapCriterion(),
+				result.getFollowUpQuestion(),
 				result.getCreatedAt()
 			);
 		}

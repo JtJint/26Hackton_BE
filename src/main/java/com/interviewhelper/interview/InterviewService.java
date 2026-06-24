@@ -197,6 +197,8 @@ public class InterviewService {
 				aiFeedback.speechFeedback().improvement()
 			),
 			aiFeedback.recommendedAnswer(),
+			aiFeedback.gapCriterion(),
+			aiFeedback.followUpQuestion(),
 			aiFeedback.questionResults()
 				.stream()
 				.map(result -> new QuestionResultResponse(
@@ -224,7 +226,9 @@ public class InterviewService {
 			feedback.eyeFeedback().improvement(),
 			feedback.speechFeedback().strength(),
 			feedback.speechFeedback().improvement(),
-			feedback.recommendedAnswer()
+			feedback.recommendedAnswer(),
+			feedback.gapCriterion(),
+			feedback.followUpQuestion()
 		);
 		return feedback;
 	}

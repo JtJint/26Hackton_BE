@@ -38,7 +38,9 @@ public class DashboardService {
 		String eyeImprovement,
 		String speechStrength,
 		String speechImprovement,
-		String recommendedAnswer
+		String recommendedAnswer,
+		String gapCriterion,
+		String followUpQuestion
 	) {
 		if (userId == null) {
 			log.warn("Dashboard practice result skipped because userId is null. interviewId={}", interviewId);
@@ -58,7 +60,9 @@ public class DashboardService {
 			normalize(eyeImprovement, ""),
 			normalize(speechStrength, ""),
 			normalize(speechImprovement, ""),
-			normalize(recommendedAnswer, "")
+			normalize(recommendedAnswer, ""),
+			normalize(gapCriterion, ""),
+			normalize(followUpQuestion, "")
 		));
 		log.info(
 			"Dashboard practice result saved. userId={}, interviewId={}, resultId={}, totalScore={}",

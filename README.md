@@ -355,7 +355,9 @@ Content-Type: application/json
     "strength": "말 속도는 적절한 편입니다.",
     "improvement": "습관어가 일부 반복되어 문장 사이에 짧게 쉬는 연습이 좋습니다."
   },
-  "recommendedAnswer": "저는 Spring Boot 프로젝트에서 생성자 주입을 사용했습니다...\n\n추가로 준비할 꼬리질문: 생성자 주입과 필드 주입의 차이를 설명해 주세요. / 순환 참조 문제를 어떻게 해결할 수 있나요?"
+  "recommendedAnswer": "저는 Spring Boot 프로젝트에서 생성자 주입을 사용했습니다...",
+  "gapCriterion": "ROLE_CLARITY",
+  "followUpQuestion": "해당 경험에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요."
 }
 ```
 
@@ -414,6 +416,8 @@ GET /api/dashboard/{userId}
         "improvement": "문장 사이에 짧은 쉼을 넣으면 더 안정적으로 들립니다."
       },
       "recommendedAnswer": "저는 Spring Boot 프로젝트에서...",
+      "gapCriterion": "ROLE_CLARITY",
+      "followUpQuestion": "해당 경험에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요.",
       "createdAt": "2026-06-24T22:40:00"
     }
   ]
@@ -561,10 +565,8 @@ AI 서버 응답:
   },
   "overall_score": 78,
   "recommended_answer": "저는 Spring Boot 프로젝트에서 생성자 주입을 사용했습니다...",
-  "follow_up_questions": [
-    "생성자 주입과 필드 주입의 차이를 설명해 주세요.",
-    "순환 참조 문제를 어떻게 해결할 수 있나요?"
-  ]
+  "gap_criterion": "ROLE_CLARITY",
+  "follow_up_question": "해당 경험에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요."
 }
 ```
 

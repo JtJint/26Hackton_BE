@@ -60,6 +60,12 @@ public class PracticeResultEntity {
 	@Column(length = 4000)
 	private String recommendedAnswer;
 
+	@Column(length = 100)
+	private String gapCriterion;
+
+	@Column(length = 1000)
+	private String followUpQuestion;
+
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
@@ -80,7 +86,9 @@ public class PracticeResultEntity {
 		String eyeImprovement,
 		String speechStrength,
 		String speechImprovement,
-		String recommendedAnswer
+		String recommendedAnswer,
+		String gapCriterion,
+		String followUpQuestion
 	) {
 		this.userId = userId;
 		this.interviewId = interviewId;
@@ -96,6 +104,8 @@ public class PracticeResultEntity {
 		this.speechStrength = speechStrength;
 		this.speechImprovement = speechImprovement;
 		this.recommendedAnswer = recommendedAnswer;
+		this.gapCriterion = gapCriterion;
+		this.followUpQuestion = followUpQuestion;
 	}
 
 	@PrePersist
@@ -163,6 +173,14 @@ public class PracticeResultEntity {
 
 	public String getRecommendedAnswer() {
 		return recommendedAnswer;
+	}
+
+	public String getGapCriterion() {
+		return gapCriterion;
+	}
+
+	public String getFollowUpQuestion() {
+		return followUpQuestion;
 	}
 
 	public LocalDateTime getCreatedAt() {

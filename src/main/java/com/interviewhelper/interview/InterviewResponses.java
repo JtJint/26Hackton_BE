@@ -114,7 +114,9 @@ public final class InterviewResponses {
 		FeedbackCategoryResponse contentFeedback,
 		FeedbackCategoryResponse eyeFeedback,
 		FeedbackCategoryResponse speechFeedback,
-		String recommendedAnswer
+		String recommendedAnswer,
+		String gapCriterion,
+		String followUpQuestion
 	) {
 		public static FeedbackResponse from(FeedbackData feedback) {
 			return new FeedbackResponse(
@@ -124,7 +126,9 @@ public final class InterviewResponses {
 				feedback.contentFeedback(),
 				feedback.eyeFeedback(),
 				feedback.speechFeedback(),
-				feedback.recommendedAnswer()
+				feedback.recommendedAnswer(),
+				feedback.gapCriterion(),
+				feedback.followUpQuestion()
 			);
 		}
 	}

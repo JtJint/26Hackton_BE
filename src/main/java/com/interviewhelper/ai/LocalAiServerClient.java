@@ -117,6 +117,8 @@ public class LocalAiServerClient implements AiServerClient {
 				"습관어를 줄이고 문장 사이에 의도적인 쉼을 넣으면 더 안정적으로 들립니다."
 			),
 			createRecommendedAnswer(interview, sortedAnswers),
+			"ROLE_CLARITY",
+			"해당 경험에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요.",
 			createQuestionResults(interview, sortedAnswers, contentScore)
 		);
 	}
