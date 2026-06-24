@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.interviewhelper.resume.CareerLevel;
 import com.interviewhelper.resume.InterviewType;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.Position;
 
 public record InterviewData(
@@ -15,6 +16,7 @@ public record InterviewData(
 	CareerLevel careerLevel,
 	Position position,
 	InterviewType interviewType,
+	InterviewerType interviewerType,
 	List<QuestionData> questions,
 	LocalDateTime createdAt
 ) {

@@ -20,6 +20,8 @@ public final class ResumeRequests {
 		Position position,
 		@Schema(description = "면접 단계", example = "TECHNICAL")
 		InterviewType interviewType,
+		@Schema(description = "면접관 스타일", example = "SOFT")
+		InterviewerType interviewerType,
 		@Schema(description = "프론트에서 추출한 이력서 전체 텍스트", example = "Java와 Spring Boot를 사용해 쇼핑몰 프로젝트를 개발했습니다.")
 		@NotBlank String resumeText
 	) {
@@ -37,6 +39,8 @@ public final class ResumeRequests {
 		Position position,
 		@Schema(description = "면접 단계", example = "TECHNICAL")
 		InterviewType interviewType,
+		@Schema(description = "면접관 스타일", example = "SOFT")
+		InterviewerType interviewerType,
 		@Schema(description = "프론트에서 추출한 이력서 전체 텍스트", example = "Java와 Spring Boot, MySQL을 사용해 주문 API와 재고 차감 로직을 구현했습니다.")
 		@NotBlank String resumeText
 	) {

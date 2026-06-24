@@ -38,6 +38,7 @@ public class ResumeController {
 			request.careerLevel(),
 			request.position(),
 			request.interviewType(),
+			request.interviewerType(),
 			request.resumeText()
 		));
 	}
@@ -54,6 +55,7 @@ public class ResumeController {
 			request.careerLevel(),
 			request.position(),
 			request.interviewType(),
+			request.interviewerType(),
 			request.resumeText()
 		);
 	}

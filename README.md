@@ -152,6 +152,7 @@ Content-Type: application/json
   "careerLevel": "JUNIOR",
   "position": "BACKEND",
   "interviewType": "TECHNICAL",
+  "interviewerType": "SOFT",
   "resumeText": "Java와 Spring Boot, MySQL을 사용해 주문 API와 재고 차감 로직을 구현했습니다."
 }
 ```
@@ -225,6 +226,7 @@ Content-Type: application/json
 {
   "text": "Spring Boot를 사용한 이유는 무엇인가요?",
   "voice": "nova",
+  "interviewerType": "SOFT",
   "instructions": "차분한 한국어 면접관처럼 말해 주세요."
 }
 ```
@@ -431,6 +433,7 @@ Spring이 AI 서버로 보내는 요청:
   "careerLevel": "JUNIOR",
   "position": "BACKEND",
   "interviewType": "TECHNICAL",
+  "interviewerType": "SOFT",
   "numQuestions": 5
 }
 ```
@@ -496,6 +499,7 @@ Spring이 AI 서버로 보내는 요청:
 {
   "text": "Spring Boot를 사용한 이유는 무엇인가요?",
   "voice": "nova",
+  "interviewerType": "SOFT",
   "instructions": "차분한 한국어 면접관처럼 말해 주세요."
 }
 ```
@@ -530,6 +534,7 @@ Spring이 AI 서버로 보내는 요청:
     "headMovementScore": 82
   },
   "category": "tech",
+  "interviewer_type": "SOFT",
   "position": "BACKEND",
   "experience": "JUNIOR"
 }
@@ -614,6 +619,15 @@ ETC
 TECHNICAL
 PERSONALITY
 COMPREHENSIVE
+```
+
+`interviewerType`
+
+```text
+SOFT
+PRESSURE
+TECH_DEEP
+PERSONALITY
 ```
 
 ## Deploy To EC2

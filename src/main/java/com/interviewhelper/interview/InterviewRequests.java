@@ -2,6 +2,8 @@ package com.interviewhelper.interview;
 
 import java.util.List;
 
+import com.interviewhelper.resume.InterviewerType;
+
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -53,6 +55,8 @@ public final class InterviewRequests {
 	public record CreateFeedbackRequest(
 		@Schema(description = "로그인 응답에서 받은 사용자 ID. 면접 생성 전 userId 연결이 빠진 경우 대시보드 저장에 사용", example = "1")
 		Long userId,
+		@Schema(description = "피드백 생성 시 사용할 면접관 스타일. 생략하면 면접 생성 시 저장된 스타일 사용", example = "TECH_DEEP")
+		InterviewerType interviewerType,
 		@ArraySchema(schema = @Schema(description = "피드백에 포함할 답변 ID", example = "1001"))
 		List<@NotNull Long> answerIds
 	) {

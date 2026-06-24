@@ -9,6 +9,7 @@ public record ResumeData(
 	CareerLevel careerLevel,
 	Position position,
 	InterviewType interviewType,
+	InterviewerType interviewerType,
 	String extractedText,
 	LocalDateTime createdAt
 ) {

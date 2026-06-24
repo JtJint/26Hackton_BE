@@ -30,6 +30,7 @@ public class ResumeService {
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
+		InterviewerType interviewerType,
 		String resumeText
 	) {
 		String normalizedJobRole = requireText(jobRole, "JOB_ROLE_EMPTY", "지원 직무를 입력해 주세요.");
@@ -42,6 +43,7 @@ public class ResumeService {
 			careerLevel == null ? CareerLevel.NEWCOMER : careerLevel,
 			position == null ? Position.ETC : position,
 			interviewType == null ? InterviewType.TECHNICAL : interviewType,
+			interviewerType == null ? InterviewerType.SOFT : interviewerType,
 			normalizedResumeText,
 			LocalDateTime.now()
 		);
@@ -55,9 +57,10 @@ public class ResumeService {
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
+		InterviewerType interviewerType,
 		String resumeText
 	) {
-		ResumeData resume = createFromText(userId, jobRole, careerLevel, position, interviewType, resumeText);
+		ResumeData resume = createFromText(userId, jobRole, careerLevel, position, interviewType, interviewerType, resumeText);
 		AiResumeAnalysisResult analysis = aiServerClient.analyzeResume(resume);
 
 		return new ResumeAnalysisResponse(
@@ -67,6 +70,7 @@ public class ResumeService {
 			resume.careerLevel(),
 			resume.position(),
 			resume.interviewType(),
+			resume.interviewerType(),
 			analysis.summary(),
 			analysis.skills(),
 			analysis.projectKeywords(),

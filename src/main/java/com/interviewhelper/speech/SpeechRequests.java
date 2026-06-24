@@ -1,5 +1,7 @@
 package com.interviewhelper.speech;
 
+import com.interviewhelper.resume.InterviewerType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,6 +17,8 @@ public final class SpeechRequests {
 		@NotBlank @Size(max = 4096) String text,
 		@Schema(description = "OpenAI TTS 보이스. 생략하면 nova", example = "nova")
 		String voice,
+		@Schema(description = "면접관 스타일. 생략하면 SOFT", example = "SOFT")
+		InterviewerType interviewerType,
 		@Schema(description = "말투/톤 지시. 생략하면 AI 서버 기본 면접관 톤 사용", example = "차분한 한국어 면접관처럼 말해 주세요.")
 		String instructions
 	) {

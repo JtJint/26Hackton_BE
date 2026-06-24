@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.interviewhelper.resume.CareerLevel;
 import com.interviewhelper.resume.InterviewType;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.Position;
 
 public final class InterviewResponses {
@@ -40,6 +41,7 @@ public final class InterviewResponses {
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
+		InterviewerType interviewerType,
 		List<QuestionResponse> questions,
 		LocalDateTime createdAt
 	) {
@@ -52,6 +54,7 @@ public final class InterviewResponses {
 				interview.careerLevel(),
 				interview.position(),
 				interview.interviewType(),
+				interview.interviewerType(),
 				interview.questions().stream().map(QuestionResponse::from).toList(),
 				interview.createdAt()
 			);

@@ -32,6 +32,7 @@ public class SpeechController {
 		return SynthesizeSpeechResponse.from(speechService.synthesize(
 			request.text(),
 			request.voice(),
+			request.interviewerType(),
 			request.instructions()
 		));
 	}

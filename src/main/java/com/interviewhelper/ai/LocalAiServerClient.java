@@ -15,6 +15,7 @@ import com.interviewhelper.interview.QuestionData;
 import com.interviewhelper.interview.SpeechAnalysis;
 import com.interviewhelper.resume.CareerLevel;
 import com.interviewhelper.resume.InterviewType;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.Position;
 import com.interviewhelper.resume.ResumeData;
 
@@ -77,7 +78,7 @@ public class LocalAiServerClient implements AiServerClient {
 	}
 
 	@Override
-	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions) {
+	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, InterviewerType interviewerType, String instructions) {
 		return new AiSpeechSynthesisResult(
 			text,
 			Base64.getEncoder().encodeToString(("local tts: " + text).getBytes(StandardCharsets.UTF_8)),

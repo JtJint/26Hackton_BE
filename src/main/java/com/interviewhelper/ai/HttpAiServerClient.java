@@ -26,6 +26,7 @@ import com.interviewhelper.interview.EyeAnalysis;
 import com.interviewhelper.interview.InterviewData;
 import com.interviewhelper.interview.QuestionData;
 import com.interviewhelper.interview.SpeechAnalysis;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.ResumeData;
 
 @Service
@@ -123,10 +124,10 @@ public class HttpAiServerClient implements AiServerClient {
 	}
 
 	@Override
-	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions) {
+	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, InterviewerType interviewerType, String instructions) {
 		SynthesizeResponse response = postJson(
 			"/synthesize",
-			new SynthesizeRequest(text, voice, instructions),
+			new SynthesizeRequest(text, voice, toAiInterviewerType(interviewerType), instructions),
 			SynthesizeResponse.class
 		);
 
@@ -196,6 +197,7 @@ public class HttpAiServerClient implements AiServerClient {
 				toAiCareerLevel(resume),
 				resume.position().name(),
 				resume.interviewType().name(),
+				toAiInterviewerType(resume.interviewerType()),
 				questionCount
 			),
 			AnalyzeResumeResponse.class
@@ -216,6 +218,7 @@ public class HttpAiServerClient implements AiServerClient {
 				answer.answerText(),
 				FeedbackMetrics.from(answer.eyeAnalysis(), answer.speechAnalysis()),
 				blankToDefault(question.category(), "tech"),
+				toAiInterviewerType(interview.interviewerType()),
 				interview.position().name(),
 				toAiCareerLevel(interview)
 			),
@@ -381,6 +384,10 @@ public class HttpAiServerClient implements AiServerClient {
 		};
 	}
 
+	private String toAiInterviewerType(InterviewerType interviewerType) {
+		return (interviewerType == null ? InterviewerType.SOFT : interviewerType).name();
+	}
+
 	private String toQuestionType(String category) {
 		String normalized = blankToDefault(category, "tech").toLowerCase();
 		return switch (normalized) {
@@ -456,6 +463,7 @@ public class HttpAiServerClient implements AiServerClient {
 		String careerLevel,
 		String position,
 		String interviewType,
+		String interviewerType,
 		Integer numQuestions
 	) {
 	}
@@ -480,6 +488,7 @@ public class HttpAiServerClient implements AiServerClient {
 		@JsonProperty("answer_transcript") String answerTranscript,
 		FeedbackMetrics metrics,
 		String category,
+		@JsonProperty("interviewer_type") String interviewerType,
 		String position,
 		String experience
 	) {
@@ -488,6 +497,7 @@ public class HttpAiServerClient implements AiServerClient {
 	public record SynthesizeRequest(
 		String text,
 		String voice,
+		String interviewerType,
 		String instructions
 	) {
 	}

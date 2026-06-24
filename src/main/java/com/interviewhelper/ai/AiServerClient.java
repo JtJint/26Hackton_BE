@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.interviewhelper.interview.AnswerData;
 import com.interviewhelper.interview.InterviewData;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.ResumeData;
 
 public interface AiServerClient {
@@ -14,7 +15,7 @@ public interface AiServerClient {
 
 	AiTranscriptionResult transcribeAudio(String filename, String contentType, byte[] audioBytes);
 
-	AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions);
+	AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, InterviewerType interviewerType, String instructions);
 
 	AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers);
 }

@@ -22,6 +22,7 @@ import com.interviewhelper.common.BusinessException;
 import com.interviewhelper.dashboard.DashboardService;
 import com.interviewhelper.interview.InterviewResponses.FeedbackCategoryResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResultResponse;
+import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.ResumeData;
 import com.interviewhelper.resume.ResumeService;
 
@@ -61,6 +62,7 @@ public class InterviewService {
 			resume.careerLevel(),
 			resume.position(),
 			resume.interviewType(),
+			resume.interviewerType(),
 			questions,
 			LocalDateTime.now()
 		);
@@ -167,8 +169,11 @@ public class InterviewService {
 		}
 	}
 
-	public FeedbackData createFeedback(Long interviewId, Long requestUserId, List<Long> answerIds) {
+	public FeedbackData createFeedback(Long interviewId, Long requestUserId, InterviewerType requestInterviewerType, List<Long> answerIds) {
 		InterviewData interview = getInterview(interviewId);
+		if (requestInterviewerType != null && requestInterviewerType != interview.interviewerType()) {
+			interview = withInterviewerType(interview, requestInterviewerType);
+		}
 		List<AnswerData> targetAnswers = resolveAnswers(interviewId, answerIds);
 		AiFeedbackResult aiFeedback = aiServerClient.generateFeedback(interview, targetAnswers);
 
@@ -222,6 +227,21 @@ public class InterviewService {
 			feedback.recommendedAnswer()
 		);
 		return feedback;
+	}
+
+	private InterviewData withInterviewerType(InterviewData interview, InterviewerType interviewerType) {
+		return new InterviewData(
+			interview.interviewId(),
+			interview.resumeId(),
+			interview.userId(),
+			interview.jobRole(),
+			interview.careerLevel(),
+			interview.position(),
+			interview.interviewType(),
+			interviewerType,
+			interview.questions(),
+			interview.createdAt()
+		);
 	}
 
 	public FeedbackData getFeedback(Long interviewId) {

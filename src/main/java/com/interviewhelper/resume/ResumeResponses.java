@@ -15,6 +15,7 @@ public final class ResumeResponses {
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
+		InterviewerType interviewerType,
 		String extractedText,
 		LocalDateTime createdAt
 	) {
@@ -26,6 +27,7 @@ public final class ResumeResponses {
 				resume.careerLevel(),
 				resume.position(),
 				resume.interviewType(),
+				resume.interviewerType(),
 				resume.extractedText(),
 				resume.createdAt()
 			);
@@ -39,6 +41,7 @@ public final class ResumeResponses {
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
+		InterviewerType interviewerType,
 		String summary,
 		List<String> skills,
 		List<String> projectKeywords,
