@@ -25,6 +25,7 @@ public class ResumeService {
 	}
 
 	public ResumeData createFromText(
+		Long userId,
 		String jobRole,
 		CareerLevel careerLevel,
 		Position position,
@@ -36,6 +37,7 @@ public class ResumeService {
 
 		ResumeData resume = new ResumeData(
 			resumeSequence.getAndIncrement(),
+			userId,
 			normalizedJobRole,
 			careerLevel == null ? CareerLevel.NEWCOMER : careerLevel,
 			position == null ? Position.ETC : position,
@@ -48,17 +50,19 @@ public class ResumeService {
 	}
 
 	public ResumeAnalysisResponse analyze(
+		Long userId,
 		String jobRole,
 		CareerLevel careerLevel,
 		Position position,
 		InterviewType interviewType,
 		String resumeText
 	) {
-		ResumeData resume = createFromText(jobRole, careerLevel, position, interviewType, resumeText);
+		ResumeData resume = createFromText(userId, jobRole, careerLevel, position, interviewType, resumeText);
 		AiResumeAnalysisResult analysis = aiServerClient.analyzeResume(resume);
 
 		return new ResumeAnalysisResponse(
 			resume.resumeId(),
+			resume.userId(),
 			resume.jobRole(),
 			resume.careerLevel(),
 			resume.position(),

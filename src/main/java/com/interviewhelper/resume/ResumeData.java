@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record ResumeData(
 	Long resumeId,
+	Long userId,
 	String jobRole,
 	CareerLevel careerLevel,
 	Position position,

@@ -33,6 +33,7 @@ public class ResumeController {
 	@PostMapping("/text")
 	public ResumeResponse createTextResume(@Valid @org.springframework.web.bind.annotation.RequestBody TextResumeRequest request) {
 		return ResumeResponse.from(resumeService.createFromText(
+			request.userId(),
 			request.jobRole(),
 			request.careerLevel(),
 			request.position(),
@@ -48,6 +49,7 @@ public class ResumeController {
 	@PostMapping("/analyze")
 	public ResumeAnalysisResponse analyze(@Valid @org.springframework.web.bind.annotation.RequestBody ResumeAnalysisRequest request) {
 		return resumeService.analyze(
+			request.userId(),
 			request.jobRole(),
 			request.careerLevel(),
 			request.position(),

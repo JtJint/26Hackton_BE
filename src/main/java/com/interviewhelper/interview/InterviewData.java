@@ -10,6 +10,7 @@ import com.interviewhelper.resume.Position;
 public record InterviewData(
 	Long interviewId,
 	Long resumeId,
+	Long userId,
 	String jobRole,
 	CareerLevel careerLevel,
 	Position position,

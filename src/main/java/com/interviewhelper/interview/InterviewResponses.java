@@ -35,6 +35,7 @@ public final class InterviewResponses {
 	public record InterviewResponse(
 		Long interviewId,
 		Long resumeId,
+		Long userId,
 		String jobRole,
 		CareerLevel careerLevel,
 		Position position,
@@ -46,6 +47,7 @@ public final class InterviewResponses {
 			return new InterviewResponse(
 				interview.interviewId(),
 				interview.resumeId(),
+				interview.userId(),
 				interview.jobRole(),
 				interview.careerLevel(),
 				interview.position(),

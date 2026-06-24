@@ -19,6 +19,7 @@ import com.interviewhelper.ai.AiQuestionResult;
 import com.interviewhelper.ai.AiServerClient;
 import com.interviewhelper.ai.AiTranscriptionResult;
 import com.interviewhelper.common.BusinessException;
+import com.interviewhelper.dashboard.DashboardService;
 import com.interviewhelper.interview.InterviewResponses.FeedbackCategoryResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResultResponse;
 import com.interviewhelper.resume.ResumeData;
@@ -33,6 +34,7 @@ public class InterviewService {
 
 	private final ResumeService resumeService;
 	private final AiServerClient aiServerClient;
+	private final DashboardService dashboardService;
 	private final AtomicLong interviewSequence = new AtomicLong(10);
 	private final AtomicLong questionSequence = new AtomicLong(101);
 	private final AtomicLong answerSequence = new AtomicLong(1001);
@@ -40,9 +42,10 @@ public class InterviewService {
 	private final Map<Long, AnswerData> answers = new ConcurrentHashMap<>();
 	private final Map<Long, FeedbackData> feedbacks = new ConcurrentHashMap<>();
 
-	public InterviewService(ResumeService resumeService, AiServerClient aiServerClient) {
+	public InterviewService(ResumeService resumeService, AiServerClient aiServerClient, DashboardService dashboardService) {
 		this.resumeService = resumeService;
 		this.aiServerClient = aiServerClient;
+		this.dashboardService = dashboardService;
 	}
 
 	public InterviewData createInterview(Long resumeId, Integer questionCount) {
@@ -53,6 +56,7 @@ public class InterviewService {
 		InterviewData interview = new InterviewData(
 			interviewSequence.getAndIncrement(),
 			resume.resumeId(),
+			resume.userId(),
 			resume.jobRole(),
 			resume.careerLevel(),
 			resume.position(),
@@ -200,6 +204,15 @@ public class InterviewService {
 				.toList()
 		);
 		feedbacks.put(interviewId, feedback);
+		dashboardService.recordPracticeResult(
+			interview.userId(),
+			interviewId,
+			feedback.totalScore(),
+			feedback.contentFeedback().score(),
+			feedback.eyeFeedback().score(),
+			feedback.speechFeedback().score(),
+			feedback.summary()
+		);
 		return feedback;
 	}
 

@@ -10,6 +10,7 @@ public final class ResumeResponses {
 
 	public record ResumeResponse(
 		Long resumeId,
+		Long userId,
 		String jobRole,
 		CareerLevel careerLevel,
 		Position position,
@@ -20,6 +21,7 @@ public final class ResumeResponses {
 		public static ResumeResponse from(ResumeData resume) {
 			return new ResumeResponse(
 				resume.resumeId(),
+				resume.userId(),
 				resume.jobRole(),
 				resume.careerLevel(),
 				resume.position(),
@@ -32,6 +34,7 @@ public final class ResumeResponses {
 
 	public record ResumeAnalysisResponse(
 		Long resumeId,
+		Long userId,
 		String jobRole,
 		CareerLevel careerLevel,
 		Position position,
