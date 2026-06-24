@@ -5,9 +5,12 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.validation.ConstraintViolationException;
@@ -51,6 +54,17 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 			.badRequest()
 			.body(new ApiError("INVALID_JSON", "요청 JSON 형식 또는 enum 값이 올바르지 않습니다."));
+	}
+
+	@ExceptionHandler({
+		MissingServletRequestParameterException.class,
+		MissingServletRequestPartException.class,
+		MultipartException.class
+	})
+	public ResponseEntity<ApiError> handleMultipartRequestException(Exception exception) {
+		return ResponseEntity
+			.badRequest()
+			.body(new ApiError("INVALID_MULTIPART_REQUEST", "multipart/form-data 요청에 questionId와 audio 파일을 포함해 주세요."));
 	}
 
 	@ExceptionHandler(NoResourceFoundException.class)

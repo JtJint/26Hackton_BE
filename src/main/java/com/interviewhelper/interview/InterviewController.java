@@ -99,7 +99,8 @@ public class InterviewController {
 	public TranscribedAnswerResponse submitAudioAnswer(
 		@PathVariable Long interviewId,
 		@RequestParam Long questionId,
-		@RequestPart MultipartFile audio,
+		@RequestPart(required = false) MultipartFile audio,
+		@RequestPart(required = false) MultipartFile file,
 		@RequestParam(required = false) Double screenFocusRatio,
 		@RequestParam(required = false) Integer gazeAwayCount,
 		@RequestParam(required = false) Integer headMovementScore
@@ -108,7 +109,7 @@ public class InterviewController {
 		return TranscribedAnswerResponse.from(interviewService.submitAudioAnswer(
 			interviewId,
 			questionId,
-			audio,
+			audio != null ? audio : file,
 			eyeAnalysis
 		));
 	}

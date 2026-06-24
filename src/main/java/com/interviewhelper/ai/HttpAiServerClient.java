@@ -88,10 +88,12 @@ public class HttpAiServerClient implements AiServerClient {
 
 		return new AiTranscriptionResult(
 			response.transcript(),
-			response.durationSec(),
-			response.paceSpm(),
+			response.durationSeconds() == null ? 0.0 : response.durationSeconds().doubleValue(),
+			toPaceSpm(response.speechAnalysis()),
 			response.paceStatus(),
-			response.fillerTotal(),
+			response.speechAnalysis() == null || response.speechAnalysis().fillerWordCount() == null
+				? 0
+				: response.speechAnalysis().fillerWordCount(),
 			response.fillerWords()
 				.stream()
 				.map(word -> new AiTranscriptionResult.FillerWordResult(word.word(), word.count()))
@@ -102,8 +104,9 @@ public class HttpAiServerClient implements AiServerClient {
 	@Override
 	public AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers) {
 		List<AiQuestionFeedbackResult> questionResults = new ArrayList<>();
-		List<String> strengths = new ArrayList<>();
-		List<String> improvements = new ArrayList<>();
+		List<AiFeedbackCategoryResult> contentFeedbacks = new ArrayList<>();
+		List<AiFeedbackCategoryResult> eyeFeedbacks = new ArrayList<>();
+		List<AiFeedbackCategoryResult> speechFeedbacks = new ArrayList<>();
 		List<String> followUps = new ArrayList<>();
 		int totalScore = 0;
 
@@ -111,21 +114,20 @@ public class HttpAiServerClient implements AiServerClient {
 			QuestionData question = findQuestion(interview, answer.questionId());
 			FeedbackResponse response = requestFeedback(interview, question, answer);
 			totalScore += response.overallScore();
-			strengths.addAll(response.strengths());
-			improvements.addAll(response.improvements());
+			contentFeedbacks.add(response.contentFeedback());
+			eyeFeedbacks.add(response.eyeFeedback());
+			speechFeedbacks.add(response.speechFeedback());
 			followUps.addAll(response.followUpQuestions());
 			questionResults.add(new AiQuestionFeedbackResult(
 				question.questionId(),
 				question.content(),
 				answer.answerText(),
 				response.overallScore(),
-				response.contentFeedback()
+				toFeedbackText(response.contentFeedback())
 			));
 		}
 
 		int averageScore = answers.isEmpty() ? 0 : Math.round((float) totalScore / answers.size());
-		String strength = strengths.isEmpty() ? "답변에서 핵심 경험을 설명했습니다." : strengths.get(0);
-		String improvement = improvements.isEmpty() ? "답변에 구체적인 근거와 결과를 더하면 좋습니다." : improvements.get(0);
 		String recommendedAnswer = followUps.isEmpty()
 			? "문제 상황, 본인의 역할, 해결 방법, 결과 순서로 답변을 다시 구성해 보세요."
 			: "추가로 준비할 꼬리질문: " + String.join(" / ", followUps.stream().limit(2).toList());
@@ -133,9 +135,9 @@ public class HttpAiServerClient implements AiServerClient {
 		return new AiFeedbackResult(
 			averageScore,
 			"AI 서버가 답변 내용과 전달 지표를 종합해 피드백을 생성했습니다.",
-			new AiFeedbackCategoryResult(averageScore, strength, improvement),
-			new AiFeedbackCategoryResult(averageScore, "시선 지표를 피드백에 반영했습니다.", "핵심 문장에서는 화면을 바라보며 말하는 연습을 해보세요."),
-			new AiFeedbackCategoryResult(averageScore, "발화 지표를 피드백에 반영했습니다.", "말 속도와 습관어를 점검하며 답변을 짧게 끊어 말해보세요."),
+			averageFeedback(contentFeedbacks, averageScore, "답변에서 핵심 경험을 설명했습니다.", "답변에 구체적인 근거와 결과를 더하면 좋습니다."),
+			averageFeedback(eyeFeedbacks, averageScore, "시선 지표를 피드백에 반영했습니다.", "핵심 문장에서는 화면을 바라보며 말하는 연습을 해보세요."),
+			averageFeedback(speechFeedbacks, averageScore, "발화 지표를 피드백에 반영했습니다.", "말 속도와 습관어를 점검하며 답변을 짧게 끊어 말해보세요."),
 			recommendedAnswer,
 			questionResults
 		);
@@ -169,7 +171,9 @@ public class HttpAiServerClient implements AiServerClient {
 				blankToDefault(question.intent(), question.type()),
 				answer.answerText(),
 				FeedbackMetrics.from(answer.eyeAnalysis(), answer.speechAnalysis()),
-				buildJobRole(interview)
+				blankToDefault(question.category(), "tech"),
+				interview.position().name(),
+				toAiCareerLevel(interview)
 			),
 			FeedbackResponse.class
 		);
@@ -297,6 +301,13 @@ public class HttpAiServerClient implements AiServerClient {
 		);
 	}
 
+	private String toAiCareerLevel(InterviewData interview) {
+		return switch (interview.careerLevel()) {
+			case JUNIOR, NEWCOMER -> "JUNIOR";
+			case EXPERIENCED -> "EXPERIENCED";
+		};
+	}
+
 	private String toAiCareerLevel(ResumeData resume) {
 		return switch (resume.careerLevel()) {
 			case JUNIOR, NEWCOMER -> "JUNIOR";
@@ -315,6 +326,46 @@ public class HttpAiServerClient implements AiServerClient {
 
 	private String blankToDefault(String value, String defaultValue) {
 		return value == null || value.isBlank() ? defaultValue : value;
+	}
+
+	private AiFeedbackCategoryResult averageFeedback(
+		List<AiFeedbackCategoryResult> feedbacks,
+		int defaultScore,
+		String defaultStrength,
+		String defaultImprovement
+	) {
+		if (feedbacks.isEmpty()) {
+			return new AiFeedbackCategoryResult(defaultScore, defaultStrength, defaultImprovement);
+		}
+
+		int score = Math.round((float) feedbacks.stream()
+			.map(AiFeedbackCategoryResult::score)
+			.filter(Objects::nonNull)
+			.mapToInt(Integer::intValue)
+			.average()
+			.orElse(defaultScore));
+		String strength = feedbacks.stream()
+			.map(AiFeedbackCategoryResult::strength)
+			.filter(value -> value != null && !value.isBlank())
+			.findFirst()
+			.orElse(defaultStrength);
+		String improvement = feedbacks.stream()
+			.map(AiFeedbackCategoryResult::improvement)
+			.filter(value -> value != null && !value.isBlank())
+			.findFirst()
+			.orElse(defaultImprovement);
+
+		return new AiFeedbackCategoryResult(score, strength, improvement);
+	}
+
+	private String toFeedbackText(AiFeedbackCategoryResult feedback) {
+		if (feedback == null) {
+			return "답변 내용을 기반으로 피드백을 생성했습니다.";
+		}
+		return "%s 개선점: %s".formatted(
+			blankToDefault(feedback.strength(), "답변의 핵심을 설명했습니다."),
+			blankToDefault(feedback.improvement(), "구체적인 근거를 더하면 좋습니다.")
+		);
 	}
 
 	public record AnalyzeResumeRequest(
@@ -346,23 +397,29 @@ public class HttpAiServerClient implements AiServerClient {
 		@JsonProperty("question_intent") String questionIntent,
 		@JsonProperty("answer_transcript") String answerTranscript,
 		FeedbackMetrics metrics,
-		@JsonProperty("job_role") String jobRole
+		String category,
+		String position,
+		String experience
 	) {
 	}
 
 	public record FeedbackMetrics(
 		@JsonProperty("pace_spm") Integer paceSpm,
 		@JsonProperty("pace_status") String paceStatus,
-		@JsonProperty("eye_contact_pct") Integer eyeContactPct,
-		@JsonProperty("filler_total") Integer fillerTotal
+		@JsonProperty("filler_total") Integer fillerTotal,
+		Double screenFocusRatio,
+		Integer gazeAwayCount,
+		Integer headMovementScore
 	) {
 		static FeedbackMetrics from(EyeAnalysis eyeAnalysis, SpeechAnalysis speechAnalysis) {
 			int paceSpm = toPaceSpm(speechAnalysis);
 			return new FeedbackMetrics(
 				paceSpm,
 				toPaceStatus(paceSpm),
-				toEyeContactPct(eyeAnalysis),
-				speechAnalysis == null || speechAnalysis.fillerWordCount() == null ? 0 : speechAnalysis.fillerWordCount()
+				speechAnalysis == null || speechAnalysis.fillerWordCount() == null ? 0 : speechAnalysis.fillerWordCount(),
+				eyeAnalysis == null || eyeAnalysis.screenFocusRatio() == null ? 0.7 : eyeAnalysis.screenFocusRatio(),
+				eyeAnalysis == null || eyeAnalysis.gazeAwayCount() == null ? 0 : eyeAnalysis.gazeAwayCount(),
+				eyeAnalysis == null || eyeAnalysis.headMovementScore() == null ? 75 : eyeAnalysis.headMovementScore()
 			);
 		}
 
@@ -382,42 +439,78 @@ public class HttpAiServerClient implements AiServerClient {
 			}
 			return "ideal";
 		}
-
-		private static int toEyeContactPct(EyeAnalysis eyeAnalysis) {
-			if (eyeAnalysis == null || eyeAnalysis.screenFocusRatio() == null) {
-				return 65;
-			}
-			return Math.max(0, Math.min(100, (int) Math.round(eyeAnalysis.screenFocusRatio() * 100)));
-		}
 	}
 
 	public record FeedbackResponse(
-		@JsonProperty("content_feedback") String contentFeedback,
-		List<String> strengths,
-		List<String> improvements,
-		@JsonProperty("delivery_feedback") String deliveryFeedback,
-		@JsonProperty("follow_up_questions") List<String> followUpQuestions,
-		@JsonProperty("overall_score") Integer overallScore
+		@JsonProperty("content_feedback") AiFeedbackCategoryResult contentFeedback,
+		@JsonProperty("eye_feedback") AiFeedbackCategoryResult eyeFeedback,
+		@JsonProperty("speech_feedback") AiFeedbackCategoryResult speechFeedback,
+		@JsonProperty("overall_score") Integer overallScore,
+		@JsonProperty("recommended_answer") String recommendedAnswer,
+		@JsonProperty("follow_up_questions") List<String> followUpQuestions
 	) {
 		public FeedbackResponse {
-			strengths = strengths == null ? List.of() : strengths;
-			improvements = improvements == null ? List.of() : improvements;
-			followUpQuestions = followUpQuestions == null ? List.of() : followUpQuestions;
+			contentFeedback = defaultFeedback(
+				contentFeedback,
+				overallScore,
+				"답변에서 핵심 경험을 설명했습니다.",
+				"답변에 구체적인 근거와 결과를 더하면 좋습니다."
+			);
+			eyeFeedback = defaultFeedback(
+				eyeFeedback,
+				overallScore,
+				"시선 지표를 피드백에 반영했습니다.",
+				"핵심 문장에서는 화면을 바라보며 말하는 연습을 해보세요."
+			);
+			speechFeedback = defaultFeedback(
+				speechFeedback,
+				overallScore,
+				"발화 지표를 피드백에 반영했습니다.",
+				"말 속도와 습관어를 점검하며 답변을 짧게 끊어 말해보세요."
+			);
 			overallScore = overallScore == null ? 0 : overallScore;
+			recommendedAnswer = recommendedAnswer == null ? "" : recommendedAnswer;
+			followUpQuestions = followUpQuestions == null ? List.of() : followUpQuestions;
+		}
+
+		private static AiFeedbackCategoryResult defaultFeedback(
+			AiFeedbackCategoryResult feedback,
+			Integer score,
+			String strength,
+			String improvement
+		) {
+			if (feedback != null) {
+				return feedback;
+			}
+			return new AiFeedbackCategoryResult(score == null ? 0 : score, strength, improvement);
 		}
 	}
 
 	public record TranscribeResponse(
 		String transcript,
-		@JsonProperty("duration_sec") Double durationSec,
-		@JsonProperty("pace_spm") Integer paceSpm,
+		Integer durationSeconds,
+		TranscribeSpeechAnalysis speechAnalysis,
 		@JsonProperty("pace_status") String paceStatus,
-		@JsonProperty("filler_total") Integer fillerTotal,
 		@JsonProperty("filler_words") List<FillerWord> fillerWords
 	) {
 		public TranscribeResponse {
 			fillerWords = fillerWords == null ? List.of() : fillerWords;
 		}
+	}
+
+	public record TranscribeSpeechAnalysis(
+		Integer wordsPerMinute,
+		Integer fillerWordCount,
+		Double silenceSeconds,
+		Integer volumeStabilityScore
+	) {
+	}
+
+	private int toPaceSpm(TranscribeSpeechAnalysis speechAnalysis) {
+		if (speechAnalysis == null || speechAnalysis.wordsPerMinute() == null) {
+			return 320;
+		}
+		return Math.max(0, (int) Math.round(speechAnalysis.wordsPerMinute() * 2.5));
 	}
 
 	public record FillerWord(
