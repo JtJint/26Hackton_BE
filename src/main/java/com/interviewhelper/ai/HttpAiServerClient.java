@@ -223,8 +223,16 @@ public class HttpAiServerClient implements AiServerClient {
 		String boundary = "----interview-helper-" + System.currentTimeMillis();
 		String safeFilename = filename == null || filename.isBlank() ? "answer.webm" : filename;
 		String safeContentType = contentType == null || contentType.isBlank() ? "application/octet-stream" : contentType;
+		long startedAt = System.nanoTime();
 
 		try {
+			log.info(
+				"AI server multipart request started. path={}, filename={}, contentType={}, sizeBytes={}",
+				path,
+				safeFilename,
+				safeContentType,
+				audioBytes.length
+			);
 			List<byte[]> bodyParts = List.of(
 				("--" + boundary + "\r\n"
 					+ "Content-Disposition: form-data; name=\"audio\"; filename=\"" + safeFilename + "\"\r\n"
@@ -243,21 +251,35 @@ public class HttpAiServerClient implements AiServerClient {
 				request,
 				HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
 			);
+			long elapsedMs = elapsedMillis(startedAt);
+			log.info(
+				"AI server multipart response received. path={}, status={}, elapsedMs={}, responseBytes={}",
+				path,
+				response.statusCode(),
+				elapsedMs,
+				response.body() == null ? 0 : response.body().getBytes(StandardCharsets.UTF_8).length
+			);
 
 			if (response.statusCode() >= 400) {
-				log.warn("AI server multipart request failed. path={}, status={}, body={}", path, response.statusCode(), response.body());
+				log.warn(
+					"AI server multipart request failed. path={}, status={}, elapsedMs={}, body={}",
+					path,
+					response.statusCode(),
+					elapsedMs,
+					response.body()
+				);
 				throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청에 실패했습니다.", HttpStatus.BAD_GATEWAY);
 			}
 
 			return objectMapper.readValue(response.body(), responseType);
 		}
 		catch (IOException exception) {
-			log.warn("AI server multipart request failed. path={}", path, exception);
+			log.warn("AI server multipart request failed. path={}, elapsedMs={}", path, elapsedMillis(startedAt), exception);
 			throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청에 실패했습니다.", HttpStatus.BAD_GATEWAY);
 		}
 		catch (InterruptedException exception) {
 			Thread.currentThread().interrupt();
-			log.warn("AI server multipart request interrupted. path={}", path, exception);
+			log.warn("AI server multipart request interrupted. path={}, elapsedMs={}", path, elapsedMillis(startedAt), exception);
 			throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청이 중단되었습니다.", HttpStatus.BAD_GATEWAY);
 		}
 	}
@@ -328,6 +350,10 @@ public class HttpAiServerClient implements AiServerClient {
 
 	private String blankToDefault(String value, String defaultValue) {
 		return value == null || value.isBlank() ? defaultValue : value;
+	}
+
+	private long elapsedMillis(long startedAt) {
+		return (System.nanoTime() - startedAt) / 1_000_000;
 	}
 
 	private AiFeedbackCategoryResult averageFeedback(

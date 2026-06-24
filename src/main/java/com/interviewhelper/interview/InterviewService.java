@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +27,7 @@ import com.interviewhelper.resume.ResumeService;
 @Service
 public class InterviewService {
 
+	private static final Logger log = LoggerFactory.getLogger(InterviewService.class);
 	private static final int DEFAULT_QUESTION_COUNT = 5;
 	private static final int MAX_QUESTION_COUNT = 10;
 
@@ -90,13 +93,47 @@ public class InterviewService {
 			throw new BusinessException("AUDIO_FILE_EMPTY", "답변 음성 파일을 첨부해 주세요.", HttpStatus.BAD_REQUEST);
 		}
 
+		long startedAt = System.nanoTime();
+		log.info(
+			"Audio answer upload started. interviewId={}, questionId={}, filename={}, contentType={}, sizeBytes={}",
+			interviewId,
+			questionId,
+			audio.getOriginalFilename(),
+			audio.getContentType(),
+			audio.getSize()
+		);
+
 		try {
+			long readStartedAt = System.nanoTime();
+			byte[] audioBytes = audio.getBytes();
+			long readElapsedMs = elapsedMillis(readStartedAt);
+			log.info(
+				"Audio file read completed. interviewId={}, questionId={}, sizeBytes={}, elapsedMs={}",
+				interviewId,
+				questionId,
+				audioBytes.length,
+				readElapsedMs
+			);
+
+			long transcribeStartedAt = System.nanoTime();
 			AiTranscriptionResult transcription = aiServerClient.transcribeAudio(
 				audio.getOriginalFilename(),
 				audio.getContentType(),
-				audio.getBytes()
+				audioBytes
 			);
-			return saveAnswer(
+			long transcribeElapsedMs = elapsedMillis(transcribeStartedAt);
+			log.info(
+				"Audio transcription completed. interviewId={}, questionId={}, elapsedMs={}, transcriptLength={}, durationSeconds={}, paceSpm={}, fillerTotal={}",
+				interviewId,
+				questionId,
+				transcribeElapsedMs,
+				transcription.transcript() == null ? 0 : transcription.transcript().length(),
+				transcription.durationSeconds(),
+				transcription.paceSpm(),
+				transcription.fillerTotal()
+			);
+
+			AnswerData answer = saveAnswer(
 				interviewId,
 				questionId,
 				transcription.transcript(),
@@ -104,8 +141,24 @@ public class InterviewService {
 				eyeAnalysis,
 				toSpeechAnalysis(transcription)
 			);
+			log.info(
+				"Audio answer upload completed. interviewId={}, questionId={}, answerId={}, totalElapsedMs={}",
+				interviewId,
+				questionId,
+				answer.answerId(),
+				elapsedMillis(startedAt)
+			);
+			return answer;
 		}
 		catch (java.io.IOException exception) {
+			log.warn(
+				"Audio file read failed. interviewId={}, questionId={}, filename={}, elapsedMs={}",
+				interviewId,
+				questionId,
+				audio.getOriginalFilename(),
+				elapsedMillis(startedAt),
+				exception
+			);
 			throw new BusinessException("AUDIO_FILE_READ_FAILED", "답변 음성 파일을 읽지 못했습니다.", HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -272,5 +325,9 @@ public class InterviewService {
 			0.0,
 			75
 		);
+	}
+
+	private long elapsedMillis(long startedAt) {
+		return (System.nanoTime() - startedAt) / 1_000_000;
 	}
 }
