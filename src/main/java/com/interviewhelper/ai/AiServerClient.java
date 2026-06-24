@@ -12,5 +12,7 @@ public interface AiServerClient {
 
 	List<AiQuestionResult> generateQuestions(ResumeData resume, int questionCount);
 
+	AiTranscriptionResult transcribeAudio(String filename, String contentType, byte[] audioBytes);
+
 	AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers);
 }

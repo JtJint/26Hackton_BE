@@ -77,6 +77,29 @@ public class HttpAiServerClient implements AiServerClient {
 	}
 
 	@Override
+	public AiTranscriptionResult transcribeAudio(String filename, String contentType, byte[] audioBytes) {
+		TranscribeResponse response = postMultipartAudio(
+			"/transcribe",
+			filename,
+			contentType,
+			audioBytes,
+			TranscribeResponse.class
+		);
+
+		return new AiTranscriptionResult(
+			response.transcript(),
+			response.durationSec(),
+			response.paceSpm(),
+			response.paceStatus(),
+			response.fillerTotal(),
+			response.fillerWords()
+				.stream()
+				.map(word -> new AiTranscriptionResult.FillerWordResult(word.word(), word.count()))
+				.toList()
+		);
+	}
+
+	@Override
 	public AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers) {
 		List<AiQuestionFeedbackResult> questionResults = new ArrayList<>();
 		List<String> strengths = new ArrayList<>();
@@ -184,6 +207,49 @@ public class HttpAiServerClient implements AiServerClient {
 			Thread.currentThread().interrupt();
 			log.warn("AI server request interrupted. path={}", path, exception);
 			throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 요청이 중단되었습니다.", HttpStatus.BAD_GATEWAY);
+		}
+	}
+
+	private <T> T postMultipartAudio(String path, String filename, String contentType, byte[] audioBytes, Class<T> responseType) {
+		String boundary = "----interview-helper-" + System.currentTimeMillis();
+		String safeFilename = filename == null || filename.isBlank() ? "answer.webm" : filename;
+		String safeContentType = contentType == null || contentType.isBlank() ? "application/octet-stream" : contentType;
+
+		try {
+			List<byte[]> bodyParts = List.of(
+				("--" + boundary + "\r\n"
+					+ "Content-Disposition: form-data; name=\"audio\"; filename=\"" + safeFilename + "\"\r\n"
+					+ "Content-Type: " + safeContentType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8),
+				audioBytes,
+				("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8)
+			);
+			HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path))
+				.version(HttpClient.Version.HTTP_1_1)
+				.timeout(Duration.ofSeconds(120))
+				.header("Content-Type", "multipart/form-data; boundary=" + boundary)
+				.header("Accept", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofByteArrays(bodyParts))
+				.build();
+			HttpResponse<String> response = httpClient.send(
+				request,
+				HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
+			);
+
+			if (response.statusCode() >= 400) {
+				log.warn("AI server multipart request failed. path={}, status={}, body={}", path, response.statusCode(), response.body());
+				throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청에 실패했습니다.", HttpStatus.BAD_GATEWAY);
+			}
+
+			return objectMapper.readValue(response.body(), responseType);
+		}
+		catch (IOException exception) {
+			log.warn("AI server multipart request failed. path={}", path, exception);
+			throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청에 실패했습니다.", HttpStatus.BAD_GATEWAY);
+		}
+		catch (InterruptedException exception) {
+			Thread.currentThread().interrupt();
+			log.warn("AI server multipart request interrupted. path={}", path, exception);
+			throw new BusinessException("AI_SERVER_REQUEST_FAILED", "AI 서버 음성 분석 요청이 중단되었습니다.", HttpStatus.BAD_GATEWAY);
 		}
 	}
 
@@ -326,5 +392,24 @@ public class HttpAiServerClient implements AiServerClient {
 			followUpQuestions = followUpQuestions == null ? List.of() : followUpQuestions;
 			overallScore = overallScore == null ? 0 : overallScore;
 		}
+	}
+
+	public record TranscribeResponse(
+		String transcript,
+		@JsonProperty("duration_sec") Double durationSec,
+		@JsonProperty("pace_spm") Integer paceSpm,
+		@JsonProperty("pace_status") String paceStatus,
+		@JsonProperty("filler_total") Integer fillerTotal,
+		@JsonProperty("filler_words") List<FillerWord> fillerWords
+	) {
+		public TranscribeResponse {
+			fillerWords = fillerWords == null ? List.of() : fillerWords;
+		}
+	}
+
+	public record FillerWord(
+		String word,
+		Integer count
+	) {
 	}
 }

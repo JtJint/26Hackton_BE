@@ -57,6 +57,18 @@ public class LocalAiServerClient implements AiServerClient {
 	}
 
 	@Override
+	public AiTranscriptionResult transcribeAudio(String filename, String contentType, byte[] audioBytes) {
+		return new AiTranscriptionResult(
+			"로컬 대체 STT 결과입니다.",
+			0.0,
+			320,
+			"ideal",
+			0,
+			List.of()
+		);
+	}
+
+	@Override
 	public AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers) {
 		List<AnswerData> sortedAnswers = answers.stream()
 			.sorted(Comparator.comparing(AnswerData::createdAt))

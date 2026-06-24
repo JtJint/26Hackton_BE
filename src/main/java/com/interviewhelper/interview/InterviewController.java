@@ -5,7 +5,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.interviewhelper.interview.InterviewRequests.CreateFeedbackRequest;
 import com.interviewhelper.interview.InterviewRequests.CreateInterviewRequest;
@@ -17,6 +20,7 @@ import com.interviewhelper.interview.InterviewResponses.FeedbackResultResponse;
 import com.interviewhelper.interview.InterviewResponses.InterviewResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionsResponse;
+import com.interviewhelper.interview.InterviewResponses.TranscribedAnswerResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -84,6 +88,28 @@ public class InterviewController {
 			request.durationSeconds(),
 			request.eyeAnalysis(),
 			request.speechAnalysis()
+		));
+	}
+
+	@Operation(
+		summary = "음성 파일 답변 저장",
+		description = "프론트가 녹음한 음성 파일과 MediaPipe 시선 지표를 보내면, 백엔드가 AI 서버 /transcribe로 STT/음성 분석을 요청하고 답변을 저장합니다."
+	)
+	@PostMapping(value = "/{interviewId}/answers/audio", consumes = "multipart/form-data")
+	public TranscribedAnswerResponse submitAudioAnswer(
+		@PathVariable Long interviewId,
+		@RequestParam Long questionId,
+		@RequestPart MultipartFile audio,
+		@RequestParam(required = false) Double screenFocusRatio,
+		@RequestParam(required = false) Integer gazeAwayCount,
+		@RequestParam(required = false) Integer headMovementScore
+	) {
+		EyeAnalysis eyeAnalysis = new EyeAnalysis(screenFocusRatio, gazeAwayCount, headMovementScore);
+		return TranscribedAnswerResponse.from(interviewService.submitAudioAnswer(
+			interviewId,
+			questionId,
+			audio,
+			eyeAnalysis
 		));
 	}
 

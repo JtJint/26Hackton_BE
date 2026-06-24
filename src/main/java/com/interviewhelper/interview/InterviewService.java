@@ -10,10 +10,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.interviewhelper.ai.AiFeedbackResult;
 import com.interviewhelper.ai.AiQuestionResult;
 import com.interviewhelper.ai.AiServerClient;
+import com.interviewhelper.ai.AiTranscriptionResult;
 import com.interviewhelper.common.BusinessException;
 import com.interviewhelper.interview.InterviewResponses.FeedbackCategoryResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResultResponse;
@@ -76,6 +78,36 @@ public class InterviewService {
 		SpeechAnalysis speechAnalysis
 	) {
 		return saveAnswer(interviewId, questionId, answerText, durationSeconds, eyeAnalysis, speechAnalysis);
+	}
+
+	public AnswerData submitAudioAnswer(
+		Long interviewId,
+		Long questionId,
+		MultipartFile audio,
+		EyeAnalysis eyeAnalysis
+	) {
+		if (audio == null || audio.isEmpty()) {
+			throw new BusinessException("AUDIO_FILE_EMPTY", "답변 음성 파일을 첨부해 주세요.", HttpStatus.BAD_REQUEST);
+		}
+
+		try {
+			AiTranscriptionResult transcription = aiServerClient.transcribeAudio(
+				audio.getOriginalFilename(),
+				audio.getContentType(),
+				audio.getBytes()
+			);
+			return saveAnswer(
+				interviewId,
+				questionId,
+				transcription.transcript(),
+				toDurationSeconds(transcription.durationSeconds()),
+				eyeAnalysis,
+				toSpeechAnalysis(transcription)
+			);
+		}
+		catch (java.io.IOException exception) {
+			throw new BusinessException("AUDIO_FILE_READ_FAILED", "답변 음성 파일을 읽지 못했습니다.", HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	public FeedbackData createFeedback(Long interviewId, List<Long> answerIds) {
@@ -222,5 +254,23 @@ public class InterviewService {
 		}
 
 		return resolved;
+	}
+
+	private Integer toDurationSeconds(Double durationSeconds) {
+		if (durationSeconds == null) {
+			return 0;
+		}
+		return Math.max(0, (int) Math.round(durationSeconds));
+	}
+
+	private SpeechAnalysis toSpeechAnalysis(AiTranscriptionResult transcription) {
+		int paceSpm = transcription.paceSpm() == null ? 320 : transcription.paceSpm();
+		int wordsPerMinute = Math.max(0, (int) Math.round(paceSpm / 2.5));
+		return new SpeechAnalysis(
+			wordsPerMinute,
+			transcription.fillerTotal() == null ? 0 : transcription.fillerTotal(),
+			0.0,
+			75
+		);
 	}
 }

@@ -73,6 +73,28 @@ public final class InterviewResponses {
 		}
 	}
 
+	public record TranscribedAnswerResponse(
+		Long answerId,
+		Long questionId,
+		Boolean saved,
+		String transcript,
+		Integer durationSeconds,
+		SpeechAnalysis speechAnalysis,
+		LocalDateTime createdAt
+	) {
+		public static TranscribedAnswerResponse from(AnswerData answer) {
+			return new TranscribedAnswerResponse(
+				answer.answerId(),
+				answer.questionId(),
+				true,
+				answer.answerText(),
+				answer.durationSeconds(),
+				answer.speechAnalysis(),
+				answer.createdAt()
+			);
+		}
+	}
+
 	public record FeedbackCategoryResponse(
 		Integer score,
 		String strength,
