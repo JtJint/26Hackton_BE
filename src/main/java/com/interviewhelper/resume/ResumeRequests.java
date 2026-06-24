@@ -12,7 +12,7 @@ public final class ResumeRequests {
 	public record TextResumeRequest(
 		@Schema(description = "지원 직무", example = "백엔드 개발자")
 		@NotBlank String jobRole,
-		@Schema(description = "경력 수준", example = "NEWCOMER")
+		@Schema(description = "경력 수준", example = "JUNIOR")
 		CareerLevel careerLevel,
 		@Schema(description = "지원 포지션", example = "BACKEND")
 		Position position,
@@ -27,7 +27,7 @@ public final class ResumeRequests {
 	public record ResumeAnalysisRequest(
 		@Schema(description = "지원 직무", example = "백엔드 개발자")
 		@NotBlank String jobRole,
-		@Schema(description = "경력 수준", example = "EXPERIENCED")
+		@Schema(description = "경력 수준", example = "JUNIOR")
 		CareerLevel careerLevel,
 		@Schema(description = "지원 포지션", example = "BACKEND")
 		Position position,

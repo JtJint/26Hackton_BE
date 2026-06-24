@@ -299,7 +299,7 @@ public class HttpAiServerClient implements AiServerClient {
 
 	private String toAiCareerLevel(ResumeData resume) {
 		return switch (resume.careerLevel()) {
-			case NEWCOMER -> "JUNIOR";
+			case JUNIOR, NEWCOMER -> "JUNIOR";
 			case EXPERIENCED -> "EXPERIENCED";
 		};
 	}
