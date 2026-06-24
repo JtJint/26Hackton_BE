@@ -232,6 +232,7 @@ public class InterviewService {
 		}
 		List<AnswerData> targetAnswers = resolveAnswers(interviewId, answerIds);
 		AiFeedbackResult aiFeedback = aiServerClient.generateFeedback(interview, targetAnswers);
+		Map<Long, Long> answerIdsByQuestionId = answerIdsByQuestionId(targetAnswers);
 
 		FeedbackData feedback = new FeedbackData(
 			interviewId,
@@ -258,6 +259,7 @@ public class InterviewService {
 			aiFeedback.questionResults()
 				.stream()
 				.map(result -> new QuestionResultResponse(
+					answerIdsByQuestionId.get(result.questionId()),
 					result.questionId(),
 					result.question(),
 					result.answer(),
@@ -450,6 +452,14 @@ public class InterviewService {
 			.sorted(Comparator.comparing(AnswerData::createdAt))
 			.forEach(answer -> latestAnswers.put(answer.questionId(), answer));
 		return latestAnswers;
+	}
+
+	private Map<Long, Long> answerIdsByQuestionId(List<AnswerData> answers) {
+		Map<Long, Long> answerIdsByQuestionId = new ConcurrentHashMap<>();
+		answers.stream()
+			.sorted(Comparator.comparing(AnswerData::createdAt))
+			.forEach(answer -> answerIdsByQuestionId.put(answer.questionId(), answer.answerId()));
+		return answerIdsByQuestionId;
 	}
 
 	private QuestionData findFollowUpQuestion(InterviewData interview, Long parentQuestionId) {

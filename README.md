@@ -402,6 +402,26 @@ Content-Type: application/json
 GET /api/interviews/{interviewId}/feedback
 ```
 
+응답:
+
+```json
+{
+  "interviewId": 10,
+  "totalScore": 78,
+  "summary": "AI 서버가 답변 내용과 전달 지표를 종합해 피드백을 생성했습니다.",
+  "questionResults": [
+    {
+      "answerId": 1001,
+      "questionId": 101,
+      "question": "Spring Boot를 사용한 이유는 무엇인가요?",
+      "answer": "저는 주문 API에서 Spring Boot를 사용했습니다.",
+      "score": 78,
+      "feedback": "기술 선택 이유와 실제 적용 사례를 더 구체화하면 좋습니다."
+    }
+  ]
+}
+```
+
 피드백 생성 시 해당 면접이 로그인 사용자 `userId`와 연결되어 있으면 대시보드 기록에 자동 저장됩니다.
 
 ### 8. 대시보드 조회

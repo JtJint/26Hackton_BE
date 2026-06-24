@@ -143,6 +143,7 @@ public final class InterviewResponses {
 	}
 
 	public record QuestionResultResponse(
+		Long answerId,
 		Long questionId,
 		String question,
 		String answer,
