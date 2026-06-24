@@ -8,6 +8,12 @@ public record AiTranscriptionResult(
 	Integer paceSpm,
 	String paceStatus,
 	Integer fillerTotal,
+	Integer repetitionCount,
+	Integer selfCorrectionCount,
+	Integer longPauseCount,
+	Double maxPauseSeconds,
+	Double avgPauseSeconds,
+	Integer disfluencyScore,
 	List<FillerWordResult> fillerWords
 ) {
 	public record FillerWordResult(

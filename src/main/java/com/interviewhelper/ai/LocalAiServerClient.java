@@ -66,6 +66,12 @@ public class LocalAiServerClient implements AiServerClient {
 			320,
 			"ideal",
 			0,
+			0,
+			0,
+			0,
+			0.0,
+			0.0,
+			0,
 			List.of()
 		);
 	}

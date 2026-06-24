@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interviewhelper.common.BusinessException;
 import com.interviewhelper.interview.AnswerData;
@@ -38,7 +39,9 @@ public class HttpAiServerClient implements AiServerClient {
 
 	public HttpAiServerClient(@Value("${ai.server.base-url}") String baseUrl) {
 		this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-		this.objectMapper = new ObjectMapper().findAndRegisterModules();
+		this.objectMapper = new ObjectMapper()
+			.findAndRegisterModules()
+			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		this.httpClient = HttpClient.newBuilder()
 			.connectTimeout(Duration.ofSeconds(5))
 			.version(HttpClient.Version.HTTP_1_1)
@@ -94,6 +97,24 @@ public class HttpAiServerClient implements AiServerClient {
 			response.speechAnalysis() == null || response.speechAnalysis().fillerWordCount() == null
 				? 0
 				: response.speechAnalysis().fillerWordCount(),
+			response.speechAnalysis() == null || response.speechAnalysis().repetitionCount() == null
+				? 0
+				: response.speechAnalysis().repetitionCount(),
+			response.speechAnalysis() == null || response.speechAnalysis().selfCorrectionCount() == null
+				? 0
+				: response.speechAnalysis().selfCorrectionCount(),
+			response.speechAnalysis() == null || response.speechAnalysis().longPauseCount() == null
+				? 0
+				: response.speechAnalysis().longPauseCount(),
+			response.speechAnalysis() == null || response.speechAnalysis().maxPauseSeconds() == null
+				? 0.0
+				: response.speechAnalysis().maxPauseSeconds(),
+			response.speechAnalysis() == null || response.speechAnalysis().avgPauseSeconds() == null
+				? 0.0
+				: response.speechAnalysis().avgPauseSeconds(),
+			response.speechAnalysis() == null || response.speechAnalysis().disfluencyScore() == null
+				? 0
+				: response.speechAnalysis().disfluencyScore(),
 			response.fillerWords()
 				.stream()
 				.map(word -> new AiTranscriptionResult.FillerWordResult(word.word(), word.count()))
@@ -579,7 +600,13 @@ public class HttpAiServerClient implements AiServerClient {
 		Integer wordsPerMinute,
 		Integer fillerWordCount,
 		Double silenceSeconds,
-		Integer volumeStabilityScore
+		Integer volumeStabilityScore,
+		Integer repetitionCount,
+		Integer selfCorrectionCount,
+		Integer longPauseCount,
+		Double maxPauseSeconds,
+		Double avgPauseSeconds,
+		Integer disfluencyScore
 	) {
 	}
 

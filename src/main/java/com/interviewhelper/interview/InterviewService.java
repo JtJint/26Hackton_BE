@@ -344,7 +344,13 @@ public class InterviewService {
 			wordsPerMinute,
 			transcription.fillerTotal() == null ? 0 : transcription.fillerTotal(),
 			0.0,
-			75
+			75,
+			transcription.repetitionCount() == null ? 0 : transcription.repetitionCount(),
+			transcription.selfCorrectionCount() == null ? 0 : transcription.selfCorrectionCount(),
+			transcription.longPauseCount() == null ? 0 : transcription.longPauseCount(),
+			transcription.maxPauseSeconds() == null ? 0.0 : transcription.maxPauseSeconds(),
+			transcription.avgPauseSeconds() == null ? 0.0 : transcription.avgPauseSeconds(),
+			transcription.disfluencyScore() == null ? 0 : transcription.disfluencyScore()
 		);
 	}
 
