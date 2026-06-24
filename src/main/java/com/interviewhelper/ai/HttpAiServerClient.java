@@ -147,6 +147,9 @@ public class HttpAiServerClient implements AiServerClient {
 			new AnalyzeResumeRequest(
 				buildResumeText(resume),
 				buildJobRole(resume),
+				toAiCareerLevel(resume),
+				resume.position().name(),
+				resume.interviewType().name(),
 				questionCount
 			),
 			AnalyzeResumeResponse.class
@@ -294,6 +297,13 @@ public class HttpAiServerClient implements AiServerClient {
 		);
 	}
 
+	private String toAiCareerLevel(ResumeData resume) {
+		return switch (resume.careerLevel()) {
+			case NEWCOMER -> "JUNIOR";
+			case EXPERIENCED -> "EXPERIENCED";
+		};
+	}
+
 	private String toQuestionType(String category) {
 		String normalized = blankToDefault(category, "tech").toLowerCase();
 		return switch (normalized) {
@@ -310,6 +320,9 @@ public class HttpAiServerClient implements AiServerClient {
 	public record AnalyzeResumeRequest(
 		String resumeText,
 		String jobRole,
+		String careerLevel,
+		String position,
+		String interviewType,
 		Integer numQuestions
 	) {
 	}
