@@ -6,8 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.stereotype.Service;
-
 import com.interviewhelper.interview.AnswerData;
 import com.interviewhelper.interview.EyeAnalysis;
 import com.interviewhelper.interview.InterviewData;
@@ -18,7 +16,6 @@ import com.interviewhelper.resume.InterviewType;
 import com.interviewhelper.resume.Position;
 import com.interviewhelper.resume.ResumeData;
 
-@Service
 public class LocalAiServerClient implements AiServerClient {
 
 	private static final List<String> KNOWN_SKILLS = List.of(

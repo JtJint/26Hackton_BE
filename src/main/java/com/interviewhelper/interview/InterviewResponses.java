@@ -16,14 +16,18 @@ public final class InterviewResponses {
 		Long questionId,
 		Integer order,
 		String type,
-		String content
+		String content,
+		String intent,
+		String category
 	) {
 		public static QuestionResponse from(QuestionData question) {
 			return new QuestionResponse(
 				question.questionId(),
 				question.order(),
 				question.type(),
-				question.content()
+				question.content(),
+				question.intent(),
+				question.category()
 			);
 		}
 	}

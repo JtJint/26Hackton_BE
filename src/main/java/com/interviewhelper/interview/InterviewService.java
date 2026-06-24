@@ -189,7 +189,9 @@ public class InterviewService {
 				questionSequence.getAndIncrement(),
 				index + 1,
 				question.type(),
-				question.content()
+				question.content(),
+				question.intent(),
+				question.category()
 			));
 		}
 		return questions;
