@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interviewhelper.dashboard.DashboardResponses.AreaScores;
 import com.interviewhelper.dashboard.DashboardResponses.DashboardResponse;
 import com.interviewhelper.dashboard.DashboardResponses.RecentPracticeResponse;
@@ -16,11 +19,15 @@ import com.interviewhelper.dashboard.DashboardResponses.RecentPracticeResponse;
 public class DashboardService {
 
 	private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
+	private static final TypeReference<List<QuestionLog>> QUESTION_LOG_LIST_TYPE = new TypeReference<>() {
+	};
 
 	private final PracticeResultRepository practiceResultRepository;
+	private final ObjectMapper objectMapper;
 
 	public DashboardService(PracticeResultRepository practiceResultRepository) {
 		this.practiceResultRepository = practiceResultRepository;
+		this.objectMapper = new ObjectMapper().findAndRegisterModules();
 	}
 
 	@Transactional
@@ -40,7 +47,8 @@ public class DashboardService {
 		String speechImprovement,
 		String recommendedAnswer,
 		String gapCriterion,
-		String followUpQuestion
+		String followUpQuestion,
+		List<QuestionLog> questionLogs
 	) {
 		if (userId == null) {
 			log.warn("Dashboard practice result skipped because userId is null. interviewId={}", interviewId);
@@ -62,7 +70,8 @@ public class DashboardService {
 			normalize(speechImprovement, ""),
 			normalize(recommendedAnswer, ""),
 			normalize(gapCriterion, ""),
-			normalize(followUpQuestion, "")
+			normalize(followUpQuestion, ""),
+			toQuestionLogsJson(questionLogs)
 		));
 		log.info(
 			"Dashboard practice result saved. userId={}, interviewId={}, resultId={}, totalScore={}",
@@ -78,7 +87,7 @@ public class DashboardService {
 		List<PracticeResultEntity> results = practiceResultRepository.findByUserIdOrderByCreatedAtAsc(userId);
 		List<RecentPracticeResponse> recentPractices = practiceResultRepository.findTop5ByUserIdOrderByCreatedAtDesc(userId)
 			.stream()
-			.map(RecentPracticeResponse::from)
+			.map(this::toRecentPracticeResponse)
 			.toList();
 
 		if (results.isEmpty()) {
@@ -164,5 +173,32 @@ public class DashboardService {
 
 	private String normalize(String value, String defaultValue) {
 		return value == null || value.isBlank() ? defaultValue : value;
+	}
+
+	private RecentPracticeResponse toRecentPracticeResponse(PracticeResultEntity result) {
+		return RecentPracticeResponse.from(result, fromQuestionLogsJson(result.getQuestionLogsJson()));
+	}
+
+	private String toQuestionLogsJson(List<QuestionLog> questionLogs) {
+		try {
+			return objectMapper.writeValueAsString(questionLogs == null ? List.of() : questionLogs);
+		}
+		catch (JsonProcessingException exception) {
+			log.warn("Question logs serialization failed. size={}", questionLogs == null ? 0 : questionLogs.size(), exception);
+			return "[]";
+		}
+	}
+
+	private List<QuestionLog> fromQuestionLogsJson(String questionLogsJson) {
+		if (questionLogsJson == null || questionLogsJson.isBlank()) {
+			return List.of();
+		}
+		try {
+			return objectMapper.readValue(questionLogsJson, QUESTION_LOG_LIST_TYPE);
+		}
+		catch (JsonProcessingException exception) {
+			log.warn("Question logs deserialization failed.", exception);
+			return List.of();
+		}
 	}
 }

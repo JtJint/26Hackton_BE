@@ -20,6 +20,7 @@ import com.interviewhelper.ai.AiServerClient;
 import com.interviewhelper.ai.AiTranscriptionResult;
 import com.interviewhelper.common.BusinessException;
 import com.interviewhelper.dashboard.DashboardService;
+import com.interviewhelper.dashboard.QuestionLog;
 import com.interviewhelper.interview.InterviewResponses.FeedbackCategoryResponse;
 import com.interviewhelper.interview.InterviewResponses.FollowUpQuestionResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResultResponse;
@@ -195,7 +196,7 @@ public class InterviewService {
 			interview.questions().size() + 1,
 			parentQuestion.type(),
 			followUpQuestion,
-			"꼬리질문 기준: " + gapCriterion,
+			"FOLLOW_UP_OF:" + parentQuestionId + " | 꼬리질문 기준: " + gapCriterion,
 			parentQuestion.category()
 		);
 
@@ -283,7 +284,8 @@ public class InterviewService {
 			feedback.speechFeedback().improvement(),
 			feedback.recommendedAnswer(),
 			feedback.gapCriterion(),
-			feedback.followUpQuestion()
+			feedback.followUpQuestion(),
+			createQuestionLogs(interviewId, interview)
 		);
 		return feedback;
 	}
@@ -413,6 +415,57 @@ public class InterviewService {
 		}
 
 		return resolved;
+	}
+
+	private List<QuestionLog> createQuestionLogs(Long interviewId, InterviewData interview) {
+		Map<Long, AnswerData> latestAnswers = latestAnswersByQuestionId(interviewId);
+		List<QuestionLog> logs = new ArrayList<>();
+
+		for (QuestionData question : interview.questions()) {
+			if (isFollowUpQuestion(question)) {
+				continue;
+			}
+
+			QuestionData followUp = findFollowUpQuestion(interview, question.questionId());
+			AnswerData mainAnswer = latestAnswers.get(question.questionId());
+			AnswerData followUpAnswer = followUp == null ? null : latestAnswers.get(followUp.questionId());
+			logs.add(new QuestionLog(
+				question.questionId(),
+				question.content(),
+				mainAnswer == null ? "" : mainAnswer.answerText(),
+				followUp == null ? null : followUp.questionId(),
+				followUp == null ? "" : followUp.content(),
+				followUpAnswer == null ? "" : followUpAnswer.answerText()
+			));
+		}
+
+		return logs;
+	}
+
+	private Map<Long, AnswerData> latestAnswersByQuestionId(Long interviewId) {
+		Map<Long, AnswerData> latestAnswers = new ConcurrentHashMap<>();
+		answers.values()
+			.stream()
+			.filter(answer -> answer.interviewId().equals(interviewId))
+			.sorted(Comparator.comparing(AnswerData::createdAt))
+			.forEach(answer -> latestAnswers.put(answer.questionId(), answer));
+		return latestAnswers;
+	}
+
+	private QuestionData findFollowUpQuestion(InterviewData interview, Long parentQuestionId) {
+		return interview.questions()
+			.stream()
+			.filter(question -> isFollowUpOf(question, parentQuestionId))
+			.findFirst()
+			.orElse(null);
+	}
+
+	private boolean isFollowUpQuestion(QuestionData question) {
+		return question.intent() != null && question.intent().startsWith("FOLLOW_UP_OF:");
+	}
+
+	private boolean isFollowUpOf(QuestionData question, Long parentQuestionId) {
+		return question.intent() != null && question.intent().startsWith("FOLLOW_UP_OF:" + parentQuestionId + " ");
 	}
 
 	private Integer toDurationSeconds(Double durationSeconds) {

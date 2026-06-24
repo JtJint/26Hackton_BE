@@ -36,9 +36,10 @@ public final class DashboardResponses {
 		String recommendedAnswer,
 		String gapCriterion,
 		String followUpQuestion,
+		List<QuestionLog> questionLogs,
 		LocalDateTime createdAt
 	) {
-		public static RecentPracticeResponse from(PracticeResultEntity result) {
+		public static RecentPracticeResponse from(PracticeResultEntity result, List<QuestionLog> questionLogs) {
 			return new RecentPracticeResponse(
 				result.getId(),
 				result.getInterviewId(),
@@ -53,6 +54,7 @@ public final class DashboardResponses {
 				result.getRecommendedAnswer(),
 				result.getGapCriterion(),
 				result.getFollowUpQuestion(),
+				questionLogs,
 				result.getCreatedAt()
 			);
 		}

@@ -453,6 +453,16 @@ GET /api/dashboard/{userId}
       "recommendedAnswer": "저는 Spring Boot 프로젝트에서...",
       "gapCriterion": "ROLE_CLARITY",
       "followUpQuestion": "해당 경험에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요.",
+      "questionLogs": [
+        {
+          "mainQuestionId": 101,
+          "mainQuestion": "Spring Boot를 사용한 이유는 무엇인가요?",
+          "mainAnswer": "저는 주문 API에서 Spring Boot를 사용했습니다.",
+          "followUpQuestionId": 102,
+          "followUpQuestion": "Spring Boot를 선택한 구체적인 이유는 무엇인가요?",
+          "followUpAnswer": "자동 설정과 트랜잭션 관리가 편해서 선택했습니다."
+        }
+      ],
       "createdAt": "2026-06-24T22:40:00"
     }
   ]
