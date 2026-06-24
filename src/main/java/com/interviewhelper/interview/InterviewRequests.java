@@ -51,6 +51,19 @@ public final class InterviewRequests {
 	) {
 	}
 
+	@Schema(description = "저장된 답변을 기반으로 실시간 꼬리질문을 생성하는 요청")
+	public record CreateFollowUpQuestionRequest(
+		@Schema(description = "로그인 응답에서 받은 사용자 ID. MVP에서는 생략 가능", example = "1")
+		Long userId,
+		@Schema(description = "꼬리질문의 기준이 되는 원본 질문 ID", example = "101")
+		@NotNull Long parentQuestionId,
+		@Schema(description = "꼬리질문의 기준이 되는 저장된 답변 ID", example = "1001")
+		@NotNull Long parentAnswerId,
+		@Schema(description = "꼬리질문 생성 시 사용할 면접관 스타일. 생략하면 면접 생성 시 저장된 스타일 사용", example = "TECH_DEEP")
+		InterviewerType interviewerType
+	) {
+	}
+
 	@Schema(description = "면접 피드백 생성 요청")
 	public record CreateFeedbackRequest(
 		@Schema(description = "로그인 응답에서 받은 사용자 ID. 면접 생성 전 userId 연결이 빠진 경우 대시보드 저장에 사용", example = "1")

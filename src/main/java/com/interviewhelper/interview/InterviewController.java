@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.interviewhelper.interview.InterviewRequests.CreateFeedbackRequest;
+import com.interviewhelper.interview.InterviewRequests.CreateFollowUpQuestionRequest;
 import com.interviewhelper.interview.InterviewRequests.CreateInterviewRequest;
 import com.interviewhelper.interview.InterviewRequests.SubmitAnswerAnalysisRequest;
 import com.interviewhelper.interview.InterviewRequests.SubmitAnswerRequest;
 import com.interviewhelper.interview.InterviewResponses.AnswerResponse;
 import com.interviewhelper.interview.InterviewResponses.FeedbackResponse;
 import com.interviewhelper.interview.InterviewResponses.FeedbackResultResponse;
+import com.interviewhelper.interview.InterviewResponses.FollowUpQuestionResponse;
 import com.interviewhelper.interview.InterviewResponses.InterviewResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionsResponse;
@@ -112,6 +114,23 @@ public class InterviewController {
 			audio != null ? audio : file,
 			eyeAnalysis
 		));
+	}
+
+	@Operation(
+		summary = "실시간 꼬리질문 생성",
+		description = "저장된 답변 1개를 기준으로 AI 서버 /feedback을 호출해 꼬리질문을 생성하고, 새 questionId로 면접 질문 목록에 추가합니다. 대시보드에는 저장하지 않습니다."
+	)
+	@PostMapping("/{interviewId}/follow-up")
+	public FollowUpQuestionResponse createFollowUpQuestion(
+		@PathVariable Long interviewId,
+		@Valid @RequestBody CreateFollowUpQuestionRequest request
+	) {
+		return interviewService.createFollowUpQuestion(
+			interviewId,
+			request.parentQuestionId(),
+			request.parentAnswerId(),
+			request.interviewerType()
+		);
 	}
 
 	@Operation(

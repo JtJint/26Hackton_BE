@@ -21,6 +21,7 @@ import com.interviewhelper.ai.AiTranscriptionResult;
 import com.interviewhelper.common.BusinessException;
 import com.interviewhelper.dashboard.DashboardService;
 import com.interviewhelper.interview.InterviewResponses.FeedbackCategoryResponse;
+import com.interviewhelper.interview.InterviewResponses.FollowUpQuestionResponse;
 import com.interviewhelper.interview.InterviewResponses.QuestionResultResponse;
 import com.interviewhelper.resume.InterviewerType;
 import com.interviewhelper.resume.ResumeData;
@@ -169,6 +170,65 @@ public class InterviewService {
 		}
 	}
 
+	public FollowUpQuestionResponse createFollowUpQuestion(
+		Long interviewId,
+		Long parentQuestionId,
+		Long parentAnswerId,
+		InterviewerType requestInterviewerType
+	) {
+		InterviewData interview = getInterview(interviewId);
+		QuestionData parentQuestion = findQuestion(interview, parentQuestionId);
+		AnswerData parentAnswer = findAnswer(interviewId, parentAnswerId);
+		if (!parentAnswer.questionId().equals(parentQuestionId)) {
+			throw new BusinessException("ANSWER_QUESTION_MISMATCH", "답변이 요청한 질문에 대한 답변이 아닙니다.", HttpStatus.BAD_REQUEST);
+		}
+
+		if (requestInterviewerType != null && requestInterviewerType != interview.interviewerType()) {
+			interview = withInterviewerType(interview, requestInterviewerType);
+		}
+
+		AiFeedbackResult aiFeedback = aiServerClient.generateFeedback(interview, List.of(parentAnswer));
+		String followUpQuestion = firstNonBlank(
+			aiFeedback.followUpQuestion(),
+			extractFollowUpQuestion(aiFeedback.recommendedAnswer()),
+			"방금 답변에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요."
+		);
+		String gapCriterion = firstNonBlank(aiFeedback.gapCriterion(), parentQuestion.intent(), "답변 구체성");
+
+		QuestionData followUp = new QuestionData(
+			questionSequence.getAndIncrement(),
+			interview.questions().size() + 1,
+			parentQuestion.type(),
+			followUpQuestion,
+			"꼬리질문 기준: " + gapCriterion,
+			parentQuestion.category()
+		);
+
+		List<QuestionData> questions = new ArrayList<>(interview.questions());
+		questions.add(followUp);
+		InterviewData updatedInterview = new InterviewData(
+			interview.interviewId(),
+			interview.resumeId(),
+			interview.userId(),
+			interview.jobRole(),
+			interview.careerLevel(),
+			interview.position(),
+			interview.interviewType(),
+			interview.interviewerType(),
+			questions,
+			interview.createdAt()
+		);
+		interviews.put(interviewId, updatedInterview);
+
+		return new FollowUpQuestionResponse(
+			parentQuestionId,
+			parentAnswerId,
+			followUp.questionId(),
+			followUp.content(),
+			gapCriterion
+		);
+	}
+
 	public FeedbackData createFeedback(Long interviewId, Long requestUserId, InterviewerType requestInterviewerType, List<Long> answerIds) {
 		InterviewData interview = getInterview(interviewId);
 		if (requestInterviewerType != null && requestInterviewerType != interview.interviewerType()) {
@@ -294,13 +354,23 @@ public class InterviewService {
 	}
 
 	private void validateQuestion(InterviewData interview, Long questionId) {
-		boolean exists = interview.questions()
-			.stream()
-			.anyMatch(question -> question.questionId().equals(questionId));
+		findQuestion(interview, questionId);
+	}
 
-		if (!exists) {
-			throw new BusinessException("QUESTION_NOT_FOUND", "면접에 포함된 질문이 아닙니다.", HttpStatus.NOT_FOUND);
+	private QuestionData findQuestion(InterviewData interview, Long questionId) {
+		return interview.questions()
+			.stream()
+			.filter(question -> question.questionId().equals(questionId))
+			.findFirst()
+			.orElseThrow(() -> new BusinessException("QUESTION_NOT_FOUND", "면접에 포함된 질문이 아닙니다.", HttpStatus.NOT_FOUND));
+	}
+
+	private AnswerData findAnswer(Long interviewId, Long answerId) {
+		AnswerData answer = answers.get(answerId);
+		if (answer == null || !answer.interviewId().equals(interviewId)) {
+			throw new BusinessException("ANSWER_NOT_FOUND", "면접에 포함된 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 		}
+		return answer;
 	}
 
 	private int normalizeQuestionCount(Integer questionCount) {
@@ -339,11 +409,7 @@ public class InterviewService {
 		}
 		else {
 			for (Long answerId : answerIds) {
-				AnswerData answer = answers.get(answerId);
-				if (answer == null || !answer.interviewId().equals(interviewId)) {
-					throw new BusinessException("ANSWER_NOT_FOUND", "면접에 포함된 답변을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
-				}
-				resolved.add(answer);
+				resolved.add(findAnswer(interviewId, answerId));
 			}
 		}
 
@@ -376,6 +442,32 @@ public class InterviewService {
 			transcription.avgPauseSeconds() == null ? 0.0 : transcription.avgPauseSeconds(),
 			transcription.disfluencyScore() == null ? 0 : transcription.disfluencyScore()
 		);
+	}
+
+	private String firstNonBlank(String... values) {
+		for (String value : values) {
+			if (value != null && !value.isBlank()) {
+				return value.trim();
+			}
+		}
+		return "";
+	}
+
+	private String extractFollowUpQuestion(String recommendedAnswer) {
+		if (recommendedAnswer == null || recommendedAnswer.isBlank()) {
+			return "";
+		}
+		String marker = "추가로 준비할 꼬리질문:";
+		int markerIndex = recommendedAnswer.indexOf(marker);
+		if (markerIndex < 0) {
+			return "";
+		}
+		String followUp = recommendedAnswer.substring(markerIndex + marker.length()).trim();
+		int separatorIndex = followUp.indexOf(" / ");
+		if (separatorIndex >= 0) {
+			followUp = followUp.substring(0, separatorIndex).trim();
+		}
+		return followUp;
 	}
 
 	private long elapsedMillis(long startedAt) {

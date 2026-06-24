@@ -100,6 +100,15 @@ public final class InterviewResponses {
 		}
 	}
 
+	public record FollowUpQuestionResponse(
+		Long parentQuestionId,
+		Long parentAnswerId,
+		Long followUpQuestionId,
+		String followUpQuestion,
+		String gapCriterion
+	) {
+	}
+
 	public record FeedbackCategoryResponse(
 		Integer score,
 		String strength,
