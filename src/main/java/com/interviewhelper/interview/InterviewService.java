@@ -174,7 +174,8 @@ public class InterviewService {
 		Long interviewId,
 		Long parentQuestionId,
 		Long parentAnswerId,
-		InterviewerType requestInterviewerType
+		String requestedFollowUpQuestion,
+		String requestedGapCriterion
 	) {
 		InterviewData interview = getInterview(interviewId);
 		QuestionData parentQuestion = findQuestion(interview, parentQuestionId);
@@ -183,17 +184,11 @@ public class InterviewService {
 			throw new BusinessException("ANSWER_QUESTION_MISMATCH", "답변이 요청한 질문에 대한 답변이 아닙니다.", HttpStatus.BAD_REQUEST);
 		}
 
-		if (requestInterviewerType != null && requestInterviewerType != interview.interviewerType()) {
-			interview = withInterviewerType(interview, requestInterviewerType);
-		}
-
-		AiFeedbackResult aiFeedback = aiServerClient.generateFeedback(interview, List.of(parentAnswer));
 		String followUpQuestion = firstNonBlank(
-			aiFeedback.followUpQuestion(),
-			extractFollowUpQuestion(aiFeedback.recommendedAnswer()),
-			"방금 답변에서 본인이 직접 담당한 부분과 의사결정한 내용을 더 구체적으로 설명해 주세요."
+			requestedFollowUpQuestion,
+			"방금 답변에 대해 조금 더 구체적으로 설명해 주세요."
 		);
-		String gapCriterion = firstNonBlank(aiFeedback.gapCriterion(), parentQuestion.intent(), "답변 구체성");
+		String gapCriterion = firstNonBlank(requestedGapCriterion, parentQuestion.intent(), "답변 구체성");
 
 		QuestionData followUp = new QuestionData(
 			questionSequence.getAndIncrement(),
@@ -451,23 +446,6 @@ public class InterviewService {
 			}
 		}
 		return "";
-	}
-
-	private String extractFollowUpQuestion(String recommendedAnswer) {
-		if (recommendedAnswer == null || recommendedAnswer.isBlank()) {
-			return "";
-		}
-		String marker = "추가로 준비할 꼬리질문:";
-		int markerIndex = recommendedAnswer.indexOf(marker);
-		if (markerIndex < 0) {
-			return "";
-		}
-		String followUp = recommendedAnswer.substring(markerIndex + marker.length()).trim();
-		int separatorIndex = followUp.indexOf(" / ");
-		if (separatorIndex >= 0) {
-			followUp = followUp.substring(0, separatorIndex).trim();
-		}
-		return followUp;
 	}
 
 	private long elapsedMillis(long startedAt) {

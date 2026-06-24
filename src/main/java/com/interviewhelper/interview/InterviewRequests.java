@@ -51,7 +51,7 @@ public final class InterviewRequests {
 	) {
 	}
 
-	@Schema(description = "저장된 답변을 기반으로 실시간 꼬리질문을 생성하는 요청")
+	@Schema(description = "프론트가 실시간으로 생성한 꼬리질문을 저장하는 요청")
 	public record CreateFollowUpQuestionRequest(
 		@Schema(description = "로그인 응답에서 받은 사용자 ID. MVP에서는 생략 가능", example = "1")
 		Long userId,
@@ -59,8 +59,10 @@ public final class InterviewRequests {
 		@NotNull Long parentQuestionId,
 		@Schema(description = "꼬리질문의 기준이 되는 저장된 답변 ID", example = "1001")
 		@NotNull Long parentAnswerId,
-		@Schema(description = "꼬리질문 생성 시 사용할 면접관 스타일. 생략하면 면접 생성 시 저장된 스타일 사용", example = "TECH_DEEP")
-		InterviewerType interviewerType
+		@Schema(description = "프론트 OpenAI Realtime API가 생성한 꼬리질문 텍스트", example = "Spring Boot를 선택한 구체적인 이유는 무엇인가요?")
+		@NotBlank String followUpQuestion,
+		@Schema(description = "꼬리질문을 만들게 된 부족 기준 또는 평가 기준", example = "기술 선택 이유 부족")
+		String gapCriterion
 	) {
 	}
 

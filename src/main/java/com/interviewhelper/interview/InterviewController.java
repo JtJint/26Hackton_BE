@@ -117,8 +117,8 @@ public class InterviewController {
 	}
 
 	@Operation(
-		summary = "실시간 꼬리질문 생성",
-		description = "저장된 답변 1개를 기준으로 AI 서버 /feedback을 호출해 꼬리질문을 생성하고, 새 questionId로 면접 질문 목록에 추가합니다. 대시보드에는 저장하지 않습니다."
+		summary = "실시간 꼬리질문 저장",
+		description = "프론트가 실시간으로 생성한 꼬리질문을 새 questionId로 면접 질문 목록에 추가합니다. AI 서버를 호출하지 않고 대시보드에도 저장하지 않습니다."
 	)
 	@PostMapping("/{interviewId}/follow-up")
 	public FollowUpQuestionResponse createFollowUpQuestion(
@@ -129,7 +129,8 @@ public class InterviewController {
 			interviewId,
 			request.parentQuestionId(),
 			request.parentAnswerId(),
-			request.interviewerType()
+			request.followUpQuestion(),
+			request.gapCriterion()
 		);
 	}
 
