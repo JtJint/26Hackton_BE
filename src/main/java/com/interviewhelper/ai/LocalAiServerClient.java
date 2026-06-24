@@ -1,6 +1,8 @@
 package com.interviewhelper.ai;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,6 +67,17 @@ public class LocalAiServerClient implements AiServerClient {
 			"ideal",
 			0,
 			List.of()
+		);
+	}
+
+	@Override
+	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions) {
+		return new AiSpeechSynthesisResult(
+			text,
+			Base64.getEncoder().encodeToString(("local tts: " + text).getBytes(StandardCharsets.UTF_8)),
+			"audio/mpeg",
+			"mp3",
+			voice == null || voice.isBlank() ? "nova" : voice
 		);
 	}
 

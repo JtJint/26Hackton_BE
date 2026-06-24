@@ -23,7 +23,7 @@ public class OpenApiConfig {
 	public GroupedOpenApi frontendApi() {
 		return GroupedOpenApi.builder()
 			.group("frontend-api")
-			.pathsToMatch("/api/resumes/**", "/api/interviews/**")
+			.pathsToMatch("/api/resumes/**", "/api/interviews/**", "/api/speech/**")
 			.build();
 	}
 }

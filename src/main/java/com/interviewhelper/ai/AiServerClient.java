@@ -14,5 +14,7 @@ public interface AiServerClient {
 
 	AiTranscriptionResult transcribeAudio(String filename, String contentType, byte[] audioBytes);
 
+	AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions);
+
 	AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers);
 }

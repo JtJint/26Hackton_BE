@@ -102,6 +102,27 @@ public class HttpAiServerClient implements AiServerClient {
 	}
 
 	@Override
+	public AiSpeechSynthesisResult synthesizeSpeech(String text, String voice, String instructions) {
+		SynthesizeResponse response = postJson(
+			"/synthesize",
+			new SynthesizeRequest(text, voice, instructions),
+			SynthesizeResponse.class
+		);
+
+		if (response == null || response.audioBase64() == null || response.audioBase64().isBlank()) {
+			throw new BusinessException("AI_SERVER_INVALID_RESPONSE", "AI 서버의 음성 합성 응답이 올바르지 않습니다.", HttpStatus.BAD_GATEWAY);
+		}
+
+		return new AiSpeechSynthesisResult(
+			response.text(),
+			response.audioBase64(),
+			blankToDefault(response.contentType(), "audio/mpeg"),
+			blankToDefault(response.format(), "mp3"),
+			blankToDefault(response.voice(), blankToDefault(voice, "nova"))
+		);
+	}
+
+	@Override
 	public AiFeedbackResult generateFeedback(InterviewData interview, List<AnswerData> answers) {
 		List<AiQuestionFeedbackResult> questionResults = new ArrayList<>();
 		List<AiFeedbackCategoryResult> contentFeedbacks = new ArrayList<>();
@@ -440,6 +461,22 @@ public class HttpAiServerClient implements AiServerClient {
 		String category,
 		String position,
 		String experience
+	) {
+	}
+
+	public record SynthesizeRequest(
+		String text,
+		String voice,
+		String instructions
+	) {
+	}
+
+	public record SynthesizeResponse(
+		String text,
+		String audioBase64,
+		String contentType,
+		String format,
+		String voice
 	) {
 	}
 
