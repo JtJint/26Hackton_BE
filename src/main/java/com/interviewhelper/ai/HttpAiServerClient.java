@@ -107,6 +107,7 @@ public class HttpAiServerClient implements AiServerClient {
 		List<AiFeedbackCategoryResult> contentFeedbacks = new ArrayList<>();
 		List<AiFeedbackCategoryResult> eyeFeedbacks = new ArrayList<>();
 		List<AiFeedbackCategoryResult> speechFeedbacks = new ArrayList<>();
+		List<String> recommendedAnswers = new ArrayList<>();
 		List<String> followUps = new ArrayList<>();
 		int totalScore = 0;
 
@@ -117,6 +118,9 @@ public class HttpAiServerClient implements AiServerClient {
 			contentFeedbacks.add(response.contentFeedback());
 			eyeFeedbacks.add(response.eyeFeedback());
 			speechFeedbacks.add(response.speechFeedback());
+			if (response.recommendedAnswer() != null && !response.recommendedAnswer().isBlank()) {
+				recommendedAnswers.add(response.recommendedAnswer());
+			}
 			followUps.addAll(response.followUpQuestions());
 			questionResults.add(new AiQuestionFeedbackResult(
 				question.questionId(),
@@ -128,9 +132,7 @@ public class HttpAiServerClient implements AiServerClient {
 		}
 
 		int averageScore = answers.isEmpty() ? 0 : Math.round((float) totalScore / answers.size());
-		String recommendedAnswer = followUps.isEmpty()
-			? "문제 상황, 본인의 역할, 해결 방법, 결과 순서로 답변을 다시 구성해 보세요."
-			: "추가로 준비할 꼬리질문: " + String.join(" / ", followUps.stream().limit(2).toList());
+		String recommendedAnswer = buildRecommendedAnswer(recommendedAnswers, followUps);
 
 		return new AiFeedbackResult(
 			averageScore,
@@ -366,6 +368,18 @@ public class HttpAiServerClient implements AiServerClient {
 			blankToDefault(feedback.strength(), "답변의 핵심을 설명했습니다."),
 			blankToDefault(feedback.improvement(), "구체적인 근거를 더하면 좋습니다.")
 		);
+	}
+
+	private String buildRecommendedAnswer(List<String> recommendedAnswers, List<String> followUps) {
+		String answer = recommendedAnswers.stream()
+			.filter(value -> value != null && !value.isBlank())
+			.findFirst()
+			.orElse("문제 상황, 본인의 역할, 해결 방법, 결과 순서로 답변을 다시 구성해 보세요.");
+
+		if (followUps.isEmpty()) {
+			return answer;
+		}
+		return answer + "\n\n추가로 준비할 꼬리질문: " + String.join(" / ", followUps.stream().limit(2).toList());
 	}
 
 	public record AnalyzeResumeRequest(
