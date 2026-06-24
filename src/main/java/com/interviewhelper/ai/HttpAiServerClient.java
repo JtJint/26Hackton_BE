@@ -308,9 +308,9 @@ public class HttpAiServerClient implements AiServerClient {
 	}
 
 	public record AnalyzeResumeRequest(
-		@JsonProperty("resume_text") String resumeText,
-		@JsonProperty("job_role") String jobRole,
-		@JsonProperty("num_questions") Integer numQuestions
+		String resumeText,
+		String jobRole,
+		Integer numQuestions
 	) {
 	}
 
