@@ -3,6 +3,8 @@ package com.interviewhelper.dashboard;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,8 @@ import com.interviewhelper.dashboard.DashboardResponses.RecentPracticeResponse;
 
 @Service
 public class DashboardService {
+
+	private static final Logger log = LoggerFactory.getLogger(DashboardService.class);
 
 	private final PracticeResultRepository practiceResultRepository;
 
@@ -37,9 +41,10 @@ public class DashboardService {
 		String recommendedAnswer
 	) {
 		if (userId == null) {
+			log.warn("Dashboard practice result skipped because userId is null. interviewId={}", interviewId);
 			return;
 		}
-		practiceResultRepository.save(new PracticeResultEntity(
+		PracticeResultEntity result = practiceResultRepository.save(new PracticeResultEntity(
 			userId,
 			interviewId,
 			valueOrZero(totalScore),
@@ -55,6 +60,13 @@ public class DashboardService {
 			normalize(speechImprovement, ""),
 			normalize(recommendedAnswer, "")
 		));
+		log.info(
+			"Dashboard practice result saved. userId={}, interviewId={}, resultId={}, totalScore={}",
+			userId,
+			interviewId,
+			result.getId(),
+			result.getTotalScore()
+		);
 	}
 
 	@Transactional(readOnly = true)

@@ -167,7 +167,7 @@ public class InterviewService {
 		}
 	}
 
-	public FeedbackData createFeedback(Long interviewId, List<Long> answerIds) {
+	public FeedbackData createFeedback(Long interviewId, Long requestUserId, List<Long> answerIds) {
 		InterviewData interview = getInterview(interviewId);
 		List<AnswerData> targetAnswers = resolveAnswers(interviewId, answerIds);
 		AiFeedbackResult aiFeedback = aiServerClient.generateFeedback(interview, targetAnswers);
@@ -204,8 +204,9 @@ public class InterviewService {
 				.toList()
 		);
 		feedbacks.put(interviewId, feedback);
+		Long dashboardUserId = interview.userId() == null ? requestUserId : interview.userId();
 		dashboardService.recordPracticeResult(
-			interview.userId(),
+			dashboardUserId,
 			interviewId,
 			feedback.totalScore(),
 			feedback.contentFeedback().score(),

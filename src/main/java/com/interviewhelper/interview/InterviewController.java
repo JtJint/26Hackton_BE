@@ -123,7 +123,7 @@ public class InterviewController {
 		@PathVariable Long interviewId,
 		@RequestBody CreateFeedbackRequest request
 	) {
-		return FeedbackResponse.from(interviewService.createFeedback(interviewId, request.answerIds()));
+		return FeedbackResponse.from(interviewService.createFeedback(interviewId, request.userId(), request.answerIds()));
 	}
 
 	@Operation(summary = "면접 결과 조회", description = "생성된 최종 리포트와 질문별 피드백을 조회합니다.")

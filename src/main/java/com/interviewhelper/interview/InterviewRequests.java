@@ -51,6 +51,8 @@ public final class InterviewRequests {
 
 	@Schema(description = "면접 피드백 생성 요청")
 	public record CreateFeedbackRequest(
+		@Schema(description = "로그인 응답에서 받은 사용자 ID. 면접 생성 전 userId 연결이 빠진 경우 대시보드 저장에 사용", example = "1")
+		Long userId,
 		@ArraySchema(schema = @Schema(description = "피드백에 포함할 답변 ID", example = "1001"))
 		List<@NotNull Long> answerIds
 	) {

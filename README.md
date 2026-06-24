@@ -311,6 +311,7 @@ Content-Type: application/json
 
 ```json
 {
+  "userId": 1,
   "answerIds": [1001]
 }
 ```
@@ -319,6 +320,7 @@ Content-Type: application/json
 
 ```json
 {
+  "userId": 1,
   "answerIds": []
 }
 ```
